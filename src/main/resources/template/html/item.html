@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:if="${sale == 1}">商店</title>
+    <title th:if="${sale == 0}">物品大全</title>
+</head>
+<body>
+<h2>购买方法：群内输入购买+物品名称</h2>
+<p th:each="item,iter:${list}" th:text="${item.name} + '：' + ${item.remark} + ' 价格：' +${item.price}"></p>
+</body>
+</html>

@@ -1,0 +1,42 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${user.name} + '的个人资料'"></title>
+</head>
+<body>
+<img th:src="${headImg}" width="80" height="80">
+<p>
+    <span>幸运：<span th:text="${user.luck} + '%'"></span></span>
+    <span style="margin-left: 25px">剩余体力：<span th:text="${user.tili}"></span></span>
+    <span style="margin-left: 25px">连续签到：<span th:text="${user.checkDay} + '天'"></span></span>
+</p>
+<p>财富：<span th:text="${user.money}"></span></p>
+<p>生命值：<span th:text="${user.health}"></span></p>
+<p>攻击力：<span th:text="${user.damage}"></span></p>
+<p>防御力：<span th:text="${user.armor}"></span></p>
+<p>速度：<span th:text="${user.speed}"></span></p>
+<p>暴击率：<span th:text="${user.crit} + '%'"></span></p>
+<p>暴击伤害：<span th:text="${user.critDamage} + '%' "></span></p>
+<p>闪避率：<span th:text="${user.dodge} + '%'"></span></p>
+<p>荣誉：<span th:text="${user.honor}"></span></p>
+<label>装备：</label>
+<table border="2" cellspacing="10" style="border-collapse:collapse">
+
+    <tr>
+       <td th:text="${items.size() > 0 ? items.get(0) : '无'}"></td>
+       <td th:text="${items.size() > 1 ? items.get(1) : '无'}"></td>
+    </tr>
+
+    <tr>
+        <td th:text="${items.size() > 2 ? items.get(2) : '无'}"></td>
+        <td th:text="${items.size() > 3 ? items.get(3) : '无'}"></td>
+    </tr>
+    <tr>
+        <td th:text="${items.size() > 4 ? items.get(4) : '无'}"></td>
+        <td th:text="${items.size() > 5 ? items.get(5) : '无'}"></td>
+    </tr>
+
+</table>
+</body>
+</html>

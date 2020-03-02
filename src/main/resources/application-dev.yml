@@ -1,0 +1,18 @@
+server:
+  port: 8085
+  servlet:
+    context-path: /robot
+spring:
+  datasource:
+    url: jdbc:mysql://122.51.103.45:3306/robot?useSSL=false&useUnicode=true&characterEncoding=utf-8
+    username: root
+    password: qqqq5210.
+    driver-class-name: com.mysql.jdbc.Driver
+  redis:
+    database: 1
+    host: 122.51.103.45
+    password: qqqq5210
+mybatis-plus:
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
