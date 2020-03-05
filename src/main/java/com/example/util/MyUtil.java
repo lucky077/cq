@@ -135,6 +135,11 @@ public class MyUtil {
     }
 
     public String getCardName(Member member){
+
+        if (member == null){
+            return "已退群人员";
+        }
+
         String name = null;
         name = member.getCard();
 

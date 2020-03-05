@@ -234,7 +234,9 @@ public class HdService {
     }
     private String getTail(int guanxi,Member member){
 
-        String ta = member.getGender() == 0 ? "他" : "她";
+        String ta = member.getGender() == 0 ? "她" : "他";
+
+        System.out.println(member);
 
         String str = " 面 无 表 情 的 看 着 你";
 

@@ -14,13 +14,19 @@ import com.example.model.Message;
 import com.example.util.LuckUtil;
 import com.example.util.MyUtil;
 import com.sobte.cqp.jcq.entity.Member;
+import lombok.Data;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.servlet.ModelAndView;
 
+import static com.example.Demo.sendGroupMsg;
 import static com.example.util.LuckUtil.*;
+
+import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -39,12 +45,13 @@ public class ItemService {
     private FriendMapper friendMapper;
 
 
+
     @CommandMapping(value = {"符卡"},menu = {"cd"},order = 1)
     public Object fk(Message message){
         String fk = MyUtil.getChildMenu("fk");
         return fk;
     }
-    @CommandMapping(value = {"赠送符卡"},menu = {"fk"},order = 1)
+    @CommandMapping(value = {"赠送符卡*"},menu = {"fk"},order = 2)
     @Transactional
     @Times(limit = 2,interval = 1000)
     public Object zsfk(Message message,Long qq2,String itemName){
@@ -57,8 +64,10 @@ public class ItemService {
             return "符卡不存在";
         }
 
+
+
         int result = userItemMapper.delete(new QueryWrapper<UserItem>()
-                .eq("item_id", item.getId()).eq("qq", user.getQq()));
+                .eq("item_id", item.getId()).eq("qq", user.getQq()).last("limit 1"));
 
         if (result < 1){
             return "你没有这张符卡";
@@ -69,7 +78,50 @@ public class ItemService {
         user.setHonor(user.getHonor() + item.getLevelNum() * 1);
         friendMapper.setVal(user.getQq(),qq2,item.getLevelNum() * 2);
 
-        return "成功";
+        return MessageFormat.format("{0}赠送了{1}符卡：{2}【{3}】！\n你们的关系提升了\n你获得荣誉",
+                user.getName(),MyUtil.getCardName(getGroupMemberInfo(qq2)),item.getName(),item.getLevel());
+    }
+
+    @CommandMapping(value = {"献祭*"},menu = {"fk"},tili = -100,notes = "献祭符卡进行占星，消耗金币和全部体力")
+    @Transactional
+    public Object xj(Message message,String itemName){
+
+        User user = message.getUser();
+
+        Item item = itemMapper.selectOne(new QueryWrapper<Item>().eq("name", itemName));
+
+        if (item == null){
+            sendGroupMsg("符卡不存在");
+            return -1;
+        }
+
+        int value = userItemMapper.selectMyValue(user.getQq());
+
+        value = value / 2 + 100;
+
+        if (value > user.getMoney()){
+            sendGroupMsg("你需要" + value + "金币才能进行献祭");
+            return -1;
+        }
+
+        int result = userItemMapper.delete(new QueryWrapper<UserItem>()
+                .eq("item_id", item.getId()).eq("qq", user.getQq()).last("limit 1"));
+
+        if (result < 1){
+            sendGroupMsg("你没有这张符卡");
+            return -1;
+        }
+
+        user.setMoney(user.getMoney() - value);
+
+        user.setHonor(user.getHonor() - item.getLevelNum() * 1);
+
+        sendGroupMsg(MessageFormat.format("{0}消耗{1}金币献祭了{2}【{3}】！\n你失去荣誉",
+                user.getName(),value,item.getName(),item.getLevel()));
+
+
+
+        return new ModelAndView("zx",(Map)zx0(message,11));
     }
 
     @CommandMapping(value = {"符卡列表"},menu = {"fk"},tili = -60)
@@ -86,17 +138,19 @@ public class ItemService {
     public Object fklb(Message message,String itemName,String itemName2){
 
         if (StringUtils.isEmpty(itemName) || StringUtils.isEmpty(itemName2)){
-            return null;
+            return -1;
         }
 
         Item item = itemMapper.selectOne(new QueryWrapper<Item>().eq("name", itemName));
 
         if (item == null){
-            return "名称错误";
+            sendGroupMsg("名称错误");
+            return -1;
         }
 
         if (! item.getQq().equals(message.getUser().getQq())){
-            return "只能改名自己召唤的符卡";
+            sendGroupMsg("只能改名自己召唤的符卡");
+            return -1;
         }
 
         itemMapper.updateById(new Item().setId(item.getId()).setName(itemName2));
@@ -109,13 +163,17 @@ public class ItemService {
     @Times(interval = 3600 * 20)
     public Object zx(Message message){
 
+        return zx0(message,10);
+
+    }
+    private Object zx0(Message message,int count){
         User user = message.getUser();
 
         List<String> list = new ArrayList<>();
 
         long money = 1;
 
-        for (int i = 0; i < 10 ; i++) {
+        for (int i = 0; i < count ; i++) {
             if (trueOrFalse(4.61)){
                 Item item = itemMapper.selectOne(new QueryWrapper<Item>().select("*", "rand() rdm").orderByAsc("rdm").last("limit 1"));
                 userItemMapper.insert(new UserItem().setItemId(item.getId()).setItemName(item.getName()).setQq(user.getQq()));
@@ -162,7 +220,7 @@ public class ItemService {
         Member info = getGroupMemberInfo(qq2);
 
         if (info == null){
-            return null;
+            return -1;
         }
 
         List<Map> list = userItemMapper.selectList(qq2);
@@ -177,7 +235,7 @@ public class ItemService {
     public Object zh(Message message,String itemName){
 
         if (StringUtils.isEmpty(itemName)){
-            return null;
+            return -1;
         }
 
         User user = message.getUser();

@@ -52,8 +52,8 @@ public class CommandService {
        String cd = "www.aslucky.club/robot/item/list?sale=1";
         return cd;
     }
-    //@CommandMapping(value = {"赌博*"},menu = {"cd"})
-    @Times(limit = 20,tip = "每天只能赌10次噢")
+    @CommandMapping(value = {"赌博*"},menu = {"cd"})
+    @Times(limit = 5,tip = "每天只能赌5次噢")
     public Object db(Message message,Integer limit){
         User user = message.getUser();
 
