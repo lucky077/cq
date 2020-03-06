@@ -27,8 +27,16 @@ public class PKService {
 
     public boolean pk(User usera,User userb){
 
-        int useraVal = userItemMapper.selectMyValue(usera.getQq());
-        int userbVal = userItemMapper.selectMyValue(userb.getQq());
+        Integer useraVal = userItemMapper.selectMyValue(usera.getQq());
+        Integer userbVal = userItemMapper.selectMyValue(userb.getQq());
+
+        if (useraVal == null){
+            useraVal = 0;
+        }
+
+        if (userbVal == null){
+            userbVal = 0;
+        }
 
         return useraVal > userbVal;
 

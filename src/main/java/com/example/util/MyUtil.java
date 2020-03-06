@@ -111,7 +111,7 @@ public class MyUtil {
     }
 
     private String arrToString(String[] arr){
-        if (arr.length == 1){
+        if (arr.length == 1 || 1 == 1){
             return arr[0];
         }
         String str = arr[0];

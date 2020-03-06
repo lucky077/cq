@@ -201,7 +201,7 @@ public class ItemService {
         return map;
     }
 
-    @CommandMapping(value = {"实力排名*"},menu = {"cd"})
+    @CommandMapping(value = {"实力排名*","实力排行*"},menu = {"cd"})
     public Object slpm(Message message,Integer limit){
 
         if (limit == null || limit > 10){

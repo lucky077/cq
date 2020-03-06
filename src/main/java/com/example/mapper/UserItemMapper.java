@@ -15,7 +15,7 @@ public interface UserItemMapper extends BaseMapper<UserItem> {
     List<Map> selectList(Object qq);
 
     @Select("select sum(i.value) from useritem ui,item i where i.id = ui.item_id and ui.qq = #{qq}")
-    int selectMyValue(Object qq);
+    Integer selectMyValue(Object qq);
 
     @Select("select ui.qq,sum(i.value) value from useritem ui,item i where i.id = ui.item_id group by ui.qq")
     List<Item> selectAllValue();

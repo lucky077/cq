@@ -78,7 +78,7 @@ public class CommandService {
             return "你失去了" + -add + "金币！";
         }
     }
-    @CommandMapping(value = {"财富排名*"},menu = {"cd"})
+    @CommandMapping(value = {"财富排名*","财富排行*"},menu = {"cd"})
     public Object cfpm(Message message,Integer limit){
 
         if (limit == null || limit > 10){
