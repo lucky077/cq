@@ -158,7 +158,7 @@ public class ItemService {
             return -1;
         }
 
-        itemMapper.updateById(new Item().setId(item.getId()).setName(itemName2));
+        itemMapper.updateById(item.setName(itemName2));
 
         return "修改成功";
     }

@@ -91,15 +91,21 @@ public class HdService {
             String card = "";
 
             if (trueOrFalse(20)){
+                System.out.println(card);
+                System.out.println(card);
+                System.out.println(card);
                 List<Map> maps = userItemMapper.selectList(qq2);
                 if (maps.size() > 0){
                     Collections.shuffle(maps);
                     Map map = maps.get(0);
                     Integer id = Integer.valueOf(map.get("id").toString());
-                    Integer name = Integer.valueOf(map.get("name").toString());
-                    Integer level = Integer.valueOf(map.get("level").toString());
+                    String name = map.get("name").toString();
+                    String level = map.get("level").toString();
                     userItemMapper.updateById(new UserItem().setId(id).setQq(user.getQq()));
                     card = "\n符卡：" + name + "【" + level + "】";
+                    System.out.println(card);
+                    System.out.println(card);
+                    System.out.println(card);
                 }
 
             }
@@ -112,8 +118,30 @@ public class HdService {
                 user2.setMoney(add + user2.getMoney());
                 user.setMoney(user.getMoney() - add);
                 userMapper.updateById0(user2);
-                return MessageFormat.format("什么都没捞到，还被{0}反抢了{1}金币！\n你们的关系恶化了",
-                        user2.getName(),add);
+
+                String card = "";
+                if (trueOrFalse(30)){
+                    System.out.println(card);
+                    System.out.println(card);
+                    System.out.println(card);
+                    List<Map> maps = userItemMapper.selectList(user.getQq());
+                    if (maps.size() > 0){
+                        Collections.shuffle(maps);
+                        Map map = maps.get(0);
+                        Integer id = Integer.valueOf(map.get("id").toString());
+                        String name = map.get("name").toString();
+                        String level = map.get("level").toString();
+                        userItemMapper.updateById(new UserItem().setId(id).setQq(user2.getQq()));
+                        card = "\n符卡：" + name + "【" + level + "】";
+                        System.out.println(card);
+                        System.out.println(card);
+                        System.out.println(card);
+                    }
+
+                }
+
+                return MessageFormat.format("什么都没捞到，还被{0}反抢了{1}金币！{2}\n你们的关系恶化了",
+                        user2.getName(),add,card);
             }
 
             return MessageFormat.format("你打不过{0}\n你们的关系恶化了",
@@ -156,7 +184,7 @@ public class HdService {
             return -1;
         }
 
-        userMapper.updateById(new User().setQq(qq2).setTili(user1.getTili() + value));
+        userMapper.updateById(user1.setTili(user1.getTili() + value));
 
         user.setTili(tili - value);
 
