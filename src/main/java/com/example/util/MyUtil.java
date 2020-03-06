@@ -150,4 +150,12 @@ public class MyUtil {
         return name;
     }
 
+    public void sleep(long l){
+        try {
+            Thread.sleep(l);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
 }

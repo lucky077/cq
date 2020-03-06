@@ -10,6 +10,8 @@ import com.example.entity.UserItem;
 import com.example.mapper.FriendMapper;
 import com.example.mapper.ItemMapper;
 import com.example.mapper.UserItemMapper;
+import com.example.mapper.UserMapper;
+import com.example.model.Goods;
 import com.example.model.Message;
 import com.example.util.LuckUtil;
 import com.example.util.MyUtil;
@@ -22,15 +24,19 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.servlet.ModelAndView;
 
 import static com.example.Demo.sendGroupMsg;
+import static com.example.Variable.currentGoods;
 import static com.example.util.LuckUtil.*;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import java.text.MessageFormat;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import static com.example.Demo.*;
 
@@ -274,6 +280,156 @@ public class ItemService {
         return user.getName() + "召唤了" + itemName + "【"+ item.getLevel() +"】";
     }
 
+    private Boolean lock = false;
+
+    @Resource
+    private UserMapper userMapper;
+
+    @CommandMapping(value = "拍卖*",menu = "fk")
+    public Object pm(Message message,String itemName,Long value){
+
+        if (StringUtils.isEmpty(itemName) || value == null){
+            return -1;
+        }
+
+        User user = message.getUser();
+
+        synchronized (lock){
+
+            if (currentGoods != null){
+                UserItem userItem = currentGoods.getUserItem();
+                return "当前正在拍卖" + userItem.getItemName() + "【"+ userItem.getLevel() +"】";
+            }
+
+            if (lock){
+                return "需要等一会才能开始下一场拍卖";
+            }
+            lock = true;
+
+
+            Goods goods = new Goods();
+
+
+            Item item = itemMapper.selectOne(new QueryWrapper<Item>().eq("name", itemName));
+
+            if (item == null){
+                return "符卡不存在";
+            }
+
+            UserItem userItem = userItemMapper.selectOne(new QueryWrapper<UserItem>()
+                    .eq("item_id",item.getId())
+                    .eq("qq",user.getQq())
+                    .last("limit 1")
+            );
+
+            if (item == null){
+                return "你没有这张符卡";
+            }
+
+
+            userItem.setItemName(item.getName());
+            userItem.setLevel(item.getLevel());
+            goods.setUserItem(userItem);
+            goods.setPrice(value);
+            goods.setLastPrice(value - 1);
+            currentGoods = goods;
+
+            sendGroupMsg(user.getName() + "开始拍卖" + userItem.getItemName() + "【"+ userItem.getLevel() +"】了\n起价" + value + "\n发送出价 + 价格参与拍卖");
+
+        }
+
+        MyUtil.async(() -> {
+
+            MyUtil.sleep(90 * 1000);
+            if (currentGoods == null){
+                lock = false;
+                return;
+            }
+            UserItem userItem = currentGoods.getUserItem();
+            Long price = currentGoods.getLastPrice();
+            Long lastQQ = currentGoods.getLastQQ();
+
+            if (lastQQ == null){
+                sendGroupMsg(userItem.getItemName() + "【"+ userItem.getLevel() +"】流拍");
+                currentGoods = null;
+                lock = false;
+                return;
+            }
+
+            userMapper.changeMoney(price,userItem.getQq());
+            userMapper.changeMoney(-price,lastQQ);
+
+            userItem.setQq(lastQQ);
+            userItemMapper.updateById(userItem);
+
+
+            Member info = getGroupMemberInfo(lastQQ);
+
+            sendGroupMsg(MyUtil.getCardName(info) + "以" + price + "金币拍下了" + userItem.getItemName() + "【"+ userItem.getLevel() +"】");
+
+            currentGoods = null;
+            lock = false;
+        });
+
+
+        return -1;
+    }
+
+    @CommandMapping(value = "出价*")
+    public Object cj(Message message,Long value){
+
+        User user = message.getUser();
+
+
+        if (value == null){
+            return -1;
+        }
+
+
+        synchronized (lock){
+
+            if (currentGoods == null){
+                return "当前没有正在拍卖的符卡";
+            }
+            UserItem userItem = currentGoods.getUserItem();
+
+            if (userItem.getQq().equals(user.getQq())){
+                return "你不能出价自己拍卖的符卡";
+            }
+
+            if (value <= currentGoods.getLastPrice()){
+                return "出价必须大于" + currentGoods.getLastPrice();
+            }
+
+            if (value > user.getMoney()){
+                return "余额不足";
+            }
+
+            if (user.getQq().equals(currentGoods.getLastQQ())){
+                LocalDateTime now = LocalDateTime.now();
+                if (now.minusSeconds(10).isBefore(currentGoods.getLastTime())){
+                    return "十秒内不能连续出价";
+                }else {
+                    userMapper.changeMoney(value,userItem.getQq());
+                    userMapper.changeMoney(-value,user.getQq());
+
+                    userItem.setQq(user.getQq());
+                    userItemMapper.updateById(userItem);
+
+
+                    Member info = getGroupMemberInfo(user.getQq());
+
+                    currentGoods = null;
+
+                    return MyUtil.getCardName(info) + "以" + value + "金币拍下了" + userItem.getItemName() + "【"+ userItem.getLevel() +"】";
+                }
+
+            }
+            currentGoods.setLastPrice(value).setLastTime(LocalDateTime.now()).setLastQQ(user.getQq());
+            return user.getName() + "出价" + value;
+        }
+
+    }
 
     private Long rdmValue(){
         long value = 0;

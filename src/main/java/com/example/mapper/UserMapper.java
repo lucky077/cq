@@ -14,10 +14,12 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+
+import static com.example.Demo.getFromGroup;
 import static com.example.Variable.*;
 public interface UserMapper extends BaseMapper<User> {
 
-    @Update("update user set money += #{money} where qq = #{qq}")
+    @Update("update user set money = money + #{money} where qq = #{qq}")
     void changeMoney(@Param("money") Long money,@Param("qq") Long qq);
 
     @Update("update user set tili = tili + 10 where tili < 100")
@@ -25,10 +27,13 @@ public interface UserMapper extends BaseMapper<User> {
     @Update("update user set tili = 100 where tili > 100")
     void changeTili2();
 
+    @Update("update user set money = money + #{money} where qq = #{qq}")
+    void changeMoney(User user);
+
     default User selectById0(Serializable id){
         User user = this.selectById(id);
         if (user == null) {
-            user = new User().setQq((long)id).setGroupId(fromGroupThreadLocal.get()).setCreateDate(new Date()).setCheckDate(new Date(1539860151000l));
+            user = new User().setQq((long)id).setGroupId(getFromGroup()).setCreateDate(new Date()).setCheckDate(new Date(1539860151000l));
             this.insert0(user);
         }
         return user;

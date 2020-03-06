@@ -4,6 +4,7 @@ package com.example;
 import com.example.annotation.CommandMapping;
 import com.example.entity.User;
 
+import com.example.model.Goods;
 import com.example.pojo.LastMsgCount;
 import com.example.pojo.MethodInvoker;
 import org.springframework.core.annotation.AnnotationUtils;
@@ -15,6 +16,9 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 //全局变量，对象本身应该是final的，没写
 public class Variable {
+
+
+    public static Goods currentGoods = null;
 
 
     //消息来源群号

@@ -42,7 +42,7 @@ public class CommandService {
         String cd = MyUtil.getChildMenu("cd");
         return cd;
     }
-    //@CommandMapping(value = {"互动"},menu = {"cd"})
+    @CommandMapping(value = {"互动"},menu = {"cd"})
     public Object hd(Message message){
         String cd = MyUtil.getChildMenu("hd");
         return cd;
@@ -52,7 +52,7 @@ public class CommandService {
        String cd = "www.aslucky.club/robot/item/list?sale=1";
         return cd;
     }
-    @CommandMapping(value = {"赌博*"},menu = {"cd"})
+    @CommandMapping(value = {"赌博*"},menu = {"hd"})
     @Times(limit = 5,tip = "每天只能赌5次噢")
     public Object db(Message message,Integer limit){
         User user = message.getUser();
@@ -101,6 +101,7 @@ public class CommandService {
 
 
     @CommandMapping(value = {"随机老婆*"},menu = {"cd"})
+    @Times(limit = 3,interval = 180)
     public Object sjlp(Message message,Integer start,Integer limit){
         if (start == null || start < 1 ||start > this.limit){
             start = 1;
@@ -126,6 +127,7 @@ public class CommandService {
     }
 
     @CommandMapping(value = {"百科*"},menu = {"cd"})
+    @Times(limit = 3,interval = 180)
     public Object bk(Message message,String word){
         if (StringUtils.isEmpty(word)){
             word = "百度百科";

@@ -19,6 +19,7 @@ import com.example.util.MyUtil;
 import com.sobte.cqp.jcq.entity.Member;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.web.servlet.ModelAndView;
 
 import static com.example.Demo.*;
 import static com.example.Variable.*;
@@ -100,8 +101,17 @@ public class HdService {
         }
 
     }
-    //@CommandMapping(value = "查看仇敌*",menu = {"hd"},order = 1)
+    @CommandMapping(value = "查看仇敌*",menu = {"hd"},order = 1)
     public Object ckcd(Message message,Long qq2){
+
+        return new ModelAndView("ckgx",(Map)ckgx(message,qq2,true,"仇敌"));
+    }
+    @CommandMapping(value = "查看朋友*",menu = {"hd"},order = 1)
+    public Object ckpy(Message message,Long qq2){
+
+        return new ModelAndView("ckgx",(Map)ckgx(message,qq2,false,"朋友"));
+    }
+    public Object ckgx(Message message,Long qq2,boolean isAsc,String word){
         User user = message.getUser();
         Long qq = message.getFromQQ();
         if (qq2 != null){
@@ -117,7 +127,7 @@ public class HdService {
         Long finalQq = qq;
         List<Map<String, Object>> maps = friendMapper.selectMaps(new QueryWrapper<Friend>()
                 .and(q -> q.eq("qq1", finalQq).or().eq("qq2", finalQq))
-                .lt("val", -10).orderByAsc("val"));
+                .lt(isAsc,"val", -10).gt(!isAsc,"val",9).orderBy(true,isAsc,"val"));
         Iterator<Map<String, Object>> iterator = maps.iterator();
 
         while (iterator.hasNext()){
@@ -137,6 +147,7 @@ public class HdService {
             next.put("qq",tQQ);
         }
         Map data = new HashMap();
+        data.put("word",word);
         data.put("list",maps);
         data.put("name",user.getName());
 
@@ -144,7 +155,7 @@ public class HdService {
     }
 
 
-    @CommandMapping(value = "赠送*",menu = {"cd"})
+    @CommandMapping(value = "赠送*",menu = {"hd"})
     @Times(limit = 2,interval = 100)
     public Object zs(Message message,Long qq2,Long num){
         Long fromQQ = message.getFromQQ();
@@ -197,7 +208,7 @@ public class HdService {
         return data;
     }
 
-    @CommandMapping(value = {"查看*","属性*"},menu = {"cd"})
+    @CommandMapping(value = {"查看*","属性*"},menu = {"hd"})
     public Object sx(Message message,Long qq2){
         Long fromQQ = message.getFromQQ();
         Long targetQQ = message.getFromQQ();

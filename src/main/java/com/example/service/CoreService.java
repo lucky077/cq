@@ -87,7 +87,8 @@ public class CoreService {
         try{
             methodInvoker.invoke(args);
         }catch (MyException e){
-            Demo.sendGroupMsg("[CQ:face,id=100][CQ:face,id=100][CQ:face,id=100]喵？？");
+            //e.printStackTrace();
+            //Demo.sendGroupMsg("[CQ:face,id=100][CQ:face,id=100][CQ:face,id=100]喵？？");
         }
 
     }

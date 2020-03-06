@@ -185,14 +185,21 @@ public class Demo extends JcqAppAbstract implements ICQVer, IMsg, IRequest {
         return MSG_IGNORE;
     }
     public static int sendGroupMsg(String msg){
-        return CQ.sendGroupMsg(fromGroupThreadLocal.get(),msg);
+        return CQ.sendGroupMsg(getFromGroup(),msg);
     }
     public static Member getGroupMemberInfo(Long qqId){
-        Long groupId = fromGroupThreadLocal.get();
+        Long groupId = getFromGroup();
         if (groupId == null){
             return null;
         }
         return CQ.getGroupMemberInfo(groupId,qqId);
+    }
+    public static Long getFromGroup(){
+        Long group = fromGroupThreadLocal.get();
+        if (group == null){
+            return 492155062L;
+        }
+        return group;
     }
     /**
      * 讨论组消息 (Type=4)<br>
