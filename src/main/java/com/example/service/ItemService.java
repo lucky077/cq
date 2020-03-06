@@ -31,12 +31,10 @@ import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import java.text.MessageFormat;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.stream.Collectors;
 
 import static com.example.Demo.*;
 
@@ -88,7 +86,7 @@ public class ItemService {
                 user.getName(),MyUtil.getCardName(getGroupMemberInfo(qq2)),item.getName(),item.getLevel());
     }
 
-    @CommandMapping(value = {"献祭*"},menu = {"fk"},tili = -100,notes = "献祭符卡进行占星，消耗金币和全部体力")
+    @CommandMapping(value = {"献祭*"},menu = {"fk"},tili = -70,notes = "献祭符卡进行占星，消耗金币和大量体力")
     @Transactional
     public Object xj(Message message,String itemName){
 
@@ -130,17 +128,18 @@ public class ItemService {
         return new ModelAndView("zx",(Map)zx0(message,11));
     }
 
-    @CommandMapping(value = {"符卡列表"},menu = {"fk"},tili = -60)
+    @CommandMapping(value = {"符卡列表"},menu = {"fk"},tili = -30)
     public Object fklb(Message message,String itemName){
 
-        List<Item> list = itemMapper.selectList(new QueryWrapper<Item>().orderByDesc("value").last("limit 50"));
+        List<Item> list = itemMapper.selectList(new QueryWrapper<Item>().orderByDesc("value").last("limit 30"));
 
         Map map = new HashMap();
         map.put("list",list);
         return map;
     }
 
-    @CommandMapping(value = {"符卡改名"},menu = {"fk"},tili = -30)
+    @CommandMapping(value = {"符卡改名"},menu = {"fk"})
+    @Times
     public Object fklb(Message message,String itemName,String itemName2){
 
         if (StringUtils.isEmpty(itemName) || StringUtils.isEmpty(itemName2)){
@@ -199,6 +198,29 @@ public class ItemService {
         Map map = new HashMap();
         map.put("list",list);
         map.put("user",user);
+        return map;
+    }
+
+    @CommandMapping(value = {"实力排名*"},menu = {"cd"})
+    public Object slpm(Message message,Integer limit){
+
+        if (limit == null || limit > 10){
+            limit = 10;
+        }
+
+        User user = message.getUser();
+
+        List<Item> list = userItemMapper.selectAllValue();
+
+        list = list.stream().sorted(Comparator.comparing(Item::getValue).reversed()).limit(limit).collect(Collectors.toList());
+
+        list.forEach(item -> {
+            Member info = getGroupMemberInfo(item.getQq());
+            item.setName(MyUtil.getCardName(info));
+        });
+
+        Map map = new HashMap();
+        map.put("list",list);
         return map;
     }
 
@@ -272,7 +294,7 @@ public class ItemService {
             return "名称重复";
         }
 
-        if (trueOrFalse(3.0)){
+        if (trueOrFalse(4)){
             userItemMapper.insert(new UserItem().setItemId(item.getId()).setItemName(itemName).setQq(user.getQq()));
             sendGroupMsg("召唤者" + user.getName() + "被" + itemName + "选中了！" );
         }
@@ -429,6 +451,29 @@ public class ItemService {
             return user.getName() + "出价" + value;
         }
 
+    }
+
+    @CommandMapping("重置符卡数据")
+    @Transactional
+    public Object czfksj(Message message){
+
+        User user = message.getUser();
+        if (!new Long("471129493").equals(user.getQq())){
+            return -1;
+        }
+
+        List<Item> items = userItemMapper.selectAllValue();
+
+        items.forEach(item -> {
+
+            userMapper.changeMoney(item.getValue() * 2,item.getQq());
+
+        });
+
+        userItemMapper.delete(null);
+        itemMapper.delete(null);
+
+        return "符卡数据已经全部清空，之前拥有符卡已经兑换成金币";
     }
 
     private Long rdmValue(){

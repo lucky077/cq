@@ -6,6 +6,7 @@ import com.example.annotation.Times;
 import com.example.entity.Friend;
 import com.example.entity.Item;
 import com.example.entity.User;
+import com.example.entity.UserItem;
 import com.example.mapper.FriendMapper;
 import com.example.mapper.ItemMapper;
 import com.example.mapper.UserItemMapper;
@@ -47,7 +48,7 @@ public class HdService {
     private StringRedisTemplate redisTemplate;
 
 
-    //@CommandMapping(value = {"打劫*"},menu = {"hd"},tili = -10)
+    @CommandMapping(value = {"打劫*"},menu = {"hd"},tili = -30)
     public Object dj(Message message,Long qq2){
         if (qq2 == null || message.getFromQQ().equals(qq2)){
             return -1;
@@ -61,15 +62,18 @@ public class HdService {
 
         Member groupMemberInfo = getGroupMemberInfo(qq2);
         if (user2.getMoney() < 2){
-            return "对方太穷了,找个有钱人打劫吧";
+            //return "对方太穷了,找个有钱人打劫吧";
         }
 
         user2.setName(MyUtil.getCardName(groupMemberInfo));
+
         boolean pk = pkService.pk(user,user2);
 
-        friendMapper.setVal(user.getQq(),qq2,-6);
+        if(trueOrFalse(10)){
+            pk = !pk;
+        }
 
-        String id = UUID.randomUUID().toString().replace("-","");
+        friendMapper.setVal(user.getQq(),qq2,-6);
 
 
 
@@ -78,17 +82,33 @@ public class HdService {
                 return user2.getName() + "逃跑了！你什么都没捞到\n你们的关系恶化了";
             }
 
-            long add = user2.getMoney() / randInt(7,13) + 1;
+            long add = user2.getMoney() / randInt(5,15) + 1;
             user.setMoney(add + user.getMoney());
             user.setHonor(user.getHonor() - 1);
             user2.setMoney(user2.getMoney() - add);
             userMapper.updateById0(user2);
 
-            return MessageFormat.format("你抢走了{0}{1}金币！\n你们的关系恶化了\n你失去荣誉",
-                    user2.getName(),add);
+            String card = "";
+
+            if (trueOrFalse(20)){
+                List<Map> maps = userItemMapper.selectList(qq2);
+                if (maps.size() > 0){
+                    Collections.shuffle(maps);
+                    Map map = maps.get(0);
+                    Integer id = Integer.valueOf(map.get("id").toString());
+                    Integer name = Integer.valueOf(map.get("name").toString());
+                    Integer level = Integer.valueOf(map.get("level").toString());
+                    userItemMapper.updateById(new UserItem().setId(id).setQq(user.getQq()));
+                    card = "\n符卡：" + name + "【" + level + "】";
+                }
+
+            }
+
+            return MessageFormat.format("你抢走了{0}{1}金币！{2}\n你们的关系恶化了\n你失去荣誉",
+                    user2.getName(),add,card);
         }else {
             if (trueOrFalse(40.0)){
-                long add = user.getMoney() / randInt(8,15) + 1;
+                long add = user.getMoney() / randInt(5,15) + 1;
                 user2.setMoney(add + user2.getMoney());
                 user.setMoney(user.getMoney() - add);
                 userMapper.updateById0(user2);
@@ -110,6 +130,39 @@ public class HdService {
     public Object ckpy(Message message,Long qq2){
 
         return new ModelAndView("ckgx",(Map)ckgx(message,qq2,false,"朋友"));
+    }
+    @CommandMapping(value = "补魔*",menu = {"hd"})
+    @Times(interval = 1800)
+    public Object bm(Message message,Long qq2,Integer value){
+
+        if (qq2 == null){
+            return -1;
+        }
+
+        if (value == null){
+            value = 20;
+        }
+
+        User user = message.getUser();
+        Integer tili = user.getTili();
+        if (tili < value){
+            sendGroupMsg("体力不支");
+            return -1;
+        }
+
+        User user1 = userMapper.selectById0(qq2);
+
+        if (user1 == null){
+            return -1;
+        }
+
+        userMapper.updateById(new User().setQq(qq2).setTili(user1.getTili() + value));
+
+        user.setTili(tili - value);
+
+        friendMapper.setVal(user.getQq(),qq2,value / 10);
+
+        return "发生了不可描述的事情呢";
     }
     public Object ckgx(Message message,Long qq2,boolean isAsc,String word){
         User user = message.getUser();
