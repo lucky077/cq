@@ -130,7 +130,8 @@ public class ItemService {
         return new ModelAndView("zx",(Map)zx0(message,10 + item.getLevelNum() * 2));
     }
 
-    @CommandMapping(value = {"符卡列表"},menu = {"fk"},tili = -30)
+    @CommandMapping(value = {"符卡列表"},menu = {"fk"})
+    @Times(interval = 3600,limit = 1)
     public Object fklb(Message message,String itemName){
 
         List<Item> list = itemMapper.selectList(new QueryWrapper<Item>().orderByDesc("value").last("limit 30"));
@@ -148,10 +149,11 @@ public class ItemService {
             return -1;
         }
 
-        if (itemName2.contains("[CQ") && !message.getUser().getQq().equals(new Long("2676056197"))){
+        if ((itemName2.contains("[CQ") || itemName2.length() > 32) && !message.getUser().getQq().equals(new Long("2676056197"))){
             sendGroupMsg("名称不合法");
             return -1;
         }
+
 
         Item item = itemMapper.selectOne(new QueryWrapper<Item>().eq("name", itemName));
 
@@ -288,7 +290,7 @@ public class ItemService {
             return -1;
         }
 
-        if (itemName.contains("[CQ") && !message.getUser().getQq().equals(new Long("2676056197"))){
+        if ((itemName.contains("[CQ")|| itemName.length() > 32) && !message.getUser().getQq().equals(new Long("2676056197"))){
             sendGroupMsg("名称不合法");
             return -1;
         }
@@ -353,7 +355,6 @@ public class ItemService {
             if (lock){
                 return "需要休息一会才能开始下一场拍卖";
             }
-            lock = true;
 
 
             Goods goods = new Goods();
@@ -371,7 +372,7 @@ public class ItemService {
                     .last("limit 1")
             );
 
-            if (item == null){
+            if (userItem == null){
                 return "你没有这张符卡";
             }
 
@@ -382,6 +383,7 @@ public class ItemService {
             goods.setPrice(value);
             goods.setLastPrice(value - 1);
             currentGoods = goods;
+            lock = true;
 
             sendGroupMsg(user.getName() + "开始拍卖" + userItem.getItemName() + "【"+ userItem.getLevel() +"】了\n起价" + value + "\n发送出价 + 价格参与拍卖");
 
