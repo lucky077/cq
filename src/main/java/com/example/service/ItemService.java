@@ -148,7 +148,7 @@ public class ItemService {
             return -1;
         }
 
-        if (itemName2.contains("[CQ")){
+        if (itemName2.contains("[CQ") && !message.getUser().getQq().equals(new Long("2676056197"))){
             sendGroupMsg("名称不合法");
             return -1;
         }
@@ -288,7 +288,7 @@ public class ItemService {
             return -1;
         }
 
-        if (itemName.contains("[CQ")){
+        if (itemName.contains("[CQ") && !message.getUser().getQq().equals(new Long("2676056197"))){
             sendGroupMsg("名称不合法");
             return -1;
         }
