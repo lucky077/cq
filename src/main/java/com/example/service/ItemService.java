@@ -88,7 +88,7 @@ public class ItemService {
                 user.getName(),MyUtil.getCardName(getGroupMemberInfo(qq2)),item.getName(),item.getLevel());
     }
 
-    @CommandMapping(value = {"献祭*"},menu = {"fk"},tili = -70,notes = "献祭符卡进行占星，消耗金币和大量体力")
+    @CommandMapping(value = {"献祭*"},menu = {"fk"},tili = -50,notes = "献祭符卡进行占星，消耗50体力和一定金币")
     @Transactional
     public Object xj(Message message,String itemName){
 
@@ -127,7 +127,7 @@ public class ItemService {
 
 
 
-        return new ModelAndView("zx",(Map)zx0(message,10 + item.getLevelNum() * 2));
+        return new ModelAndView("zx",(Map)zx0(message,10 + item.getLevelNum() * 5));
     }
 
     @CommandMapping(value = {"符卡列表"},menu = {"fk"})
@@ -176,8 +176,28 @@ public class ItemService {
         return "修改成功";
     }
 
+    @CommandMapping(value = {"金币占星"},menu = {"fk"},notes = "2700金币抽符卡")
+    public Object jbzx(Message message){
 
-    @CommandMapping(value = {"占星"},menu = {"fk"},notes = "抽符卡")
+        User user = message.getUser();
+        Integer sumCount = itemMapper.selectCount(new QueryWrapper<Item>()
+                .eq("qq", user.getQq())
+        );
+
+        if (sumCount < 1){
+            sendGroupMsg("至少召唤一张符卡才能占星！");
+            return -1;
+        }
+
+        if (user.getMoney() < 2700){
+            sendGroupMsg("需要2700金币！");
+            return -1;
+        }
+
+        user.setMoney(user.getMoney() - 2700);
+        return new ModelAndView("zx",(Map)zx0(message,10));
+    }
+    @CommandMapping(value = {"占星"},menu = {"fk"},notes = "免费抽符卡")
     @Times(interval = 3600 * 20)
     public Object zx(Message message){
 
@@ -209,9 +229,9 @@ public class ItemService {
                 list.add(item.getName() + "【" +item.getLevel()+ "】");
             }else if (trueOrFalse(46.1)){
                 if (trueOrFalse(10)){
-                    money += randInt(200,400);
+                    money += randInt(200,500);
                 }
-                money += randInt(1,20);
+                money += randInt(1,30);
             }
         }
 
@@ -495,7 +515,7 @@ public class ItemService {
 
         items.forEach(item -> {
 
-            userMapper.changeMoney(item.getValue() * 2,item.getQq());
+            userMapper.changeMoney(item.getValue() * 3,item.getQq());
 
         });
 
