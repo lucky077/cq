@@ -183,7 +183,8 @@ public class ItemService {
                 .eq("qq", message.getUser().getQq())
         );
         if (sumCount < 1){
-            return "至少召唤一张符卡才能占星！";
+            sendGroupMsg("至少召唤一张符卡才能占星！");
+            return -1;
         }
 
         return zx0(message,10);
