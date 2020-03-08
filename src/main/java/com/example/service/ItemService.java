@@ -65,7 +65,8 @@ public class ItemService {
         Item item = itemMapper.selectOne(new QueryWrapper<Item>().eq("name", itemName));
 
         if (item == null){
-            return "符卡不存在";
+            sendGroupMsg("符卡不存在");
+            return -1;
         }
 
 
@@ -74,7 +75,8 @@ public class ItemService {
                 .eq("item_id", item.getId()).eq("qq", user.getQq()).last("limit 1"));
 
         if (result < 1){
-            return "你没有这张符卡";
+            sendGroupMsg("你没有这张符卡");
+            return -1;
         }
 
         userItemMapper.insert(new UserItem().setQq(qq2).setItemId(item.getId()).setItemName(item.getName()));
@@ -125,7 +127,7 @@ public class ItemService {
 
 
 
-        return new ModelAndView("zx",(Map)zx0(message,11));
+        return new ModelAndView("zx",(Map)zx0(message,10 + item.getLevelNum() * 2));
     }
 
     @CommandMapping(value = {"符卡列表"},menu = {"fk"},tili = -30)
@@ -146,6 +148,11 @@ public class ItemService {
             return -1;
         }
 
+        if (itemName2.contains("[CQ")){
+            sendGroupMsg("名称不合法");
+            return -1;
+        }
+
         Item item = itemMapper.selectOne(new QueryWrapper<Item>().eq("name", itemName));
 
         if (item == null){
@@ -157,8 +164,12 @@ public class ItemService {
             sendGroupMsg("只能改名自己召唤的符卡");
             return -1;
         }
-
-        itemMapper.updateById(item.setName(itemName2));
+        try{
+            itemMapper.updateById(item.setName(itemName2));
+        }catch (Exception e){
+            sendGroupMsg("名称重复");
+            return -1;
+        }
 
         return "修改成功";
     }
@@ -167,6 +178,13 @@ public class ItemService {
     @CommandMapping(value = {"占星"},menu = {"fk"},notes = "抽符卡")
     @Times(interval = 3600 * 20)
     public Object zx(Message message){
+
+        Integer sumCount = itemMapper.selectCount(new QueryWrapper<Item>()
+                .eq("qq", message.getUser().getQq())
+        );
+        if (sumCount < 1){
+            return "至少召唤一张符卡才能占星！";
+        }
 
         return zx0(message,10);
 
@@ -181,6 +199,9 @@ public class ItemService {
         for (int i = 0; i < count ; i++) {
             if (trueOrFalse(4.61)){
                 Item item = itemMapper.selectOne(new QueryWrapper<Item>().select("*", "rand() rdm").orderByAsc("rdm").last("limit 1"));
+                if (item == null){
+                    return -1;
+                }
                 userItemMapper.insert(new UserItem().setItemId(item.getId()).setItemName(item.getName()).setQq(user.getQq()));
                 list.add(item.getName() + "【" +item.getLevel()+ "】");
             }else if (trueOrFalse(46.1)){
@@ -266,6 +287,11 @@ public class ItemService {
             return -1;
         }
 
+        if (itemName.contains("[CQ")){
+            sendGroupMsg("名称不合法");
+            return -1;
+        }
+
         User user = message.getUser();
 
         Integer sumCount = itemMapper.selectCount(new QueryWrapper<Item>()
@@ -324,7 +350,7 @@ public class ItemService {
             }
 
             if (lock){
-                return "需要等一会才能开始下一场拍卖";
+                return "需要休息一会才能开始下一场拍卖";
             }
             lock = true;
 
@@ -481,7 +507,7 @@ public class ItemService {
         //
         if (trueOrFalse(3)){
             value = randInt(100,1500);
-        }else if (trueOrFalse(15)){
+        }else if (trueOrFalse(14)){
             value = randInt(50,500);
         }else {
             value = randInt(1,100);

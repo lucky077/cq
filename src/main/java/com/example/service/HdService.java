@@ -1,6 +1,7 @@
 package com.example.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.example.annotation.CommandMapping;
 import com.example.annotation.Times;
 import com.example.entity.Friend;
@@ -28,6 +29,7 @@ import javax.annotation.Resource;
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import static com.example.util.LuckUtil.*;
 
@@ -48,7 +50,7 @@ public class HdService {
     private StringRedisTemplate redisTemplate;
 
 
-    @CommandMapping(value = {"打劫*"},menu = {"hd"},tili = -30)
+    @CommandMapping(value = {"打劫*","抢劫*"},menu = {"hd"},tili = -30)
     public Object dj(Message message,Long qq2){
         if (qq2 == null || message.getFromQQ().equals(qq2)){
             return -1;
@@ -78,8 +80,23 @@ public class HdService {
 
 
         if (pk){
-            if (trueOrFalse(25.0)){
-                return user2.getName() + "逃跑了！你什么都没捞到\n你们的关系恶化了";
+            if (trueOrFalse(20.0)){
+
+                String card = "";
+
+                if (trueOrFalse(35)){
+                    List<Map> maps = userItemMapper.selectList(qq2);
+                    Map map;
+                    if ((map = getNoUr(maps)) != null){
+                        Integer id = Integer.valueOf(map.get("id").toString());
+                        String name = map.get("name").toString();
+                        String level = map.get("level").toString();
+                        userItemMapper.delete(new UpdateWrapper<UserItem>().eq("id",id));
+                        card = "\n跑的匆忙，不慎遗失符卡：" + name + "【" + level + "】";
+                    }
+
+                }
+                return user2.getName() + "逃跑了！你什么都没捞到\n你们的关系恶化了" + card;
             }
 
             long add = user2.getMoney() / randInt(5,15) + 1;
@@ -90,22 +107,15 @@ public class HdService {
 
             String card = "";
 
-            if (trueOrFalse(20)){
-                System.out.println(card);
-                System.out.println(card);
-                System.out.println(card);
+            if (trueOrFalse(25)){
                 List<Map> maps = userItemMapper.selectList(qq2);
-                if (maps.size() > 0){
-                    Collections.shuffle(maps);
-                    Map map = maps.get(0);
+                Map map;
+                if ((map = getNoUr(maps)) != null){
                     Integer id = Integer.valueOf(map.get("id").toString());
                     String name = map.get("name").toString();
                     String level = map.get("level").toString();
                     userItemMapper.updateById(new UserItem().setId(id).setQq(user.getQq()));
                     card = "\n符卡：" + name + "【" + level + "】";
-                    System.out.println(card);
-                    System.out.println(card);
-                    System.out.println(card);
                 }
 
             }
@@ -114,28 +124,22 @@ public class HdService {
                     user2.getName(),add,card);
         }else {
             if (trueOrFalse(40.0)){
-                long add = user.getMoney() / randInt(5,15) + 1;
+                long add = user.getMoney() / randInt(4,10) + 1;
                 user2.setMoney(add + user2.getMoney());
                 user.setMoney(user.getMoney() - add);
                 userMapper.updateById0(user2);
 
                 String card = "";
-                if (trueOrFalse(30)){
-                    System.out.println(card);
-                    System.out.println(card);
-                    System.out.println(card);
+                if (trueOrFalse(35)){
                     List<Map> maps = userItemMapper.selectList(user.getQq());
-                    if (maps.size() > 0){
-                        Collections.shuffle(maps);
-                        Map map = maps.get(0);
+                    Map map;
+                    if ((map = getNoUr(maps)) != null){
+
                         Integer id = Integer.valueOf(map.get("id").toString());
                         String name = map.get("name").toString();
                         String level = map.get("level").toString();
                         userItemMapper.updateById(new UserItem().setId(id).setQq(user2.getQq()));
                         card = "\n符卡：" + name + "【" + level + "】";
-                        System.out.println(card);
-                        System.out.println(card);
-                        System.out.println(card);
                     }
 
                 }
@@ -149,6 +153,20 @@ public class HdService {
         }
 
     }
+    private Map getNoUr(List<Map> maps){
+        if(maps == null || maps.isEmpty()){
+            return null;
+        }
+
+        maps = maps.stream().filter(map -> !map.get("level").toString().equals("UR")).collect(Collectors.toList());
+
+        if (maps.isEmpty()){
+            return null;
+        }
+
+        Collections.shuffle(maps);
+        return maps.get(0);
+    }
     @CommandMapping(value = "查看仇敌*",menu = {"hd"},order = 1)
     public Object ckcd(Message message,Long qq2){
 
@@ -160,7 +178,7 @@ public class HdService {
         return new ModelAndView("ckgx",(Map)ckgx(message,qq2,false,"朋友"));
     }
     @CommandMapping(value = "补魔*",menu = {"hd"})
-    @Times(interval = 1800)
+    @Times(interval = 1800,tip = "这种事要适度喔")
     public Object bm(Message message,Long qq2,Integer value){
 
         if (qq2 == null){
@@ -185,8 +203,7 @@ public class HdService {
         }
 
         userMapper.updateById(user1.setTili(user1.getTili() + value));
-
-        user.setTili(tili - value);
+        userMapper.updateById(user.setTili(tili - value));
 
         friendMapper.setVal(user.getQq(),qq2,value / 10);
 
