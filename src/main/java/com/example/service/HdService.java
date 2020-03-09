@@ -189,6 +189,10 @@ public class HdService {
             value = 20;
         }
 
+        if(value < 0){
+            return -1;
+        }
+
         User user = message.getUser();
         Integer tili = user.getTili();
         if (tili < value){
