@@ -7,6 +7,8 @@ import com.example.pojo.LastMsgCount;
 import com.example.pojo.MethodInvoker;
 import com.example.util.MyUtil;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -17,12 +19,16 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import static com.example.Variable.*;
 import static com.sobte.cqp.jcq.event.JcqApp.CQ;
 
 @Service
 public class CoreService {
+
+    @Autowired
+    private StringRedisTemplate stringRedisTemplate;
 
 
     //不阻塞cq线程
@@ -44,7 +50,16 @@ public class CoreService {
         }else {
             if (lastMsgCount.msg.equals(message.getMsg()) && !fromQQ.equals(2137857515l)){
                 if (lastMsgCount.count.incrementAndGet() > 3){
-                    CQ.setGroupBan(fromGroup,fromQQ,60);
+                    String key = "times:banCount:" + fromQQ;
+                    String val = stringRedisTemplate.opsForValue().get(key);
+                    Integer banCount;
+                    if (val == null){
+                        banCount = 1;
+                    }else {
+                        banCount = Integer.valueOf(val);
+                    }
+                    CQ.setGroupBan(fromGroup,fromQQ,60 * banCount * 2 - 60);
+                    stringRedisTemplate.opsForValue().set(key,String.valueOf(banCount + 1),7, TimeUnit.DAYS);
                     return;
                 }
             }else {
