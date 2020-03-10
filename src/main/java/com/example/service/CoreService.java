@@ -44,11 +44,13 @@ public class CoreService {
             //return;
         }
         Long fromQQ = message.getFromQQ();
+
+
         LastMsgCount lastMsgCount = lastMsgCountMap.get(fromQQ);
         if (lastMsgCount == null){
             lastMsgCountMap.put(fromQQ,new LastMsgCount(message.getMsg()));
         }else {
-            if (lastMsgCount.msg.equals(message.getMsg()) && !fromQQ.equals(2137857515l)){
+            if (lastMsgCount.msg.equals(message.getMsg()) && !fromQQ.equals(3301725802l)){
                 if (lastMsgCount.count.incrementAndGet() > 3){
                     String key = "times:banCount:" + fromQQ;
                     String val = stringRedisTemplate.opsForValue().get(key);
