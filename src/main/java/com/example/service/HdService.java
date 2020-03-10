@@ -71,9 +71,6 @@ public class HdService {
 
         boolean pk = pkService.pk(user,user2);
 
-        if(trueOrFalse(10)){
-            pk = !pk;
-        }
 
         friendMapper.setVal(user.getQq(),qq2,-6);
 
@@ -99,7 +96,7 @@ public class HdService {
                 return user2.getName() + "逃跑了！你什么都没捞到\n你们的关系恶化了" + card;
             }
 
-            long add = user2.getMoney() / randInt(5,15) + 1;
+            long add = user2.getMoney() / randInt(6,15) + 1;
             user.setMoney(add + user.getMoney());
             user.setHonor(user.getHonor() - 1);
             user2.setMoney(user2.getMoney() - add);
@@ -123,14 +120,14 @@ public class HdService {
             return MessageFormat.format("你抢走了{0}{1}金币！{2}\n你们的关系恶化了\n你失去荣誉",
                     user2.getName(),add,card);
         }else {
-            if (trueOrFalse(40.0)){
-                long add = user.getMoney() / randInt(4,10) + 1;
+            if (trueOrFalse(35.0)){
+                long add = user.getMoney() / randInt(4,12) + 1;
                 user2.setMoney(add + user2.getMoney());
                 user.setMoney(user.getMoney() - add);
                 userMapper.updateById0(user2);
 
                 String card = "";
-                if (trueOrFalse(35)){
+                if (trueOrFalse(25)){
                     List<Map> maps = userItemMapper.selectList(user.getQq());
                     Map map;
                     if ((map = getNoUr(maps)) != null){

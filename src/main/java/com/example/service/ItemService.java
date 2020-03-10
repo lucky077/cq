@@ -176,7 +176,7 @@ public class ItemService {
         return "修改成功";
     }
 
-    @CommandMapping(value = {"金币占星"},menu = {"fk"},notes = "2700金币抽符卡")
+    @CommandMapping(value = {"金币占星"},menu = {"fk"},notes = "1888金币抽符卡")
     public Object jbzx(Message message){
 
         User user = message.getUser();
@@ -189,12 +189,12 @@ public class ItemService {
             return -1;
         }
 
-        if (user.getMoney() < 2700){
-            sendGroupMsg("需要2700金币！");
+        if (user.getMoney() < 1888){
+            sendGroupMsg("需要1888金币！");
             return -1;
         }
 
-        user.setMoney(user.getMoney() - 2700);
+        user.setMoney(user.getMoney() - 1888);
         return new ModelAndView("zx",(Map)zx0(message,10));
     }
     @CommandMapping(value = {"占星"},menu = {"fk"},notes = "免费抽符卡")
@@ -515,7 +515,7 @@ public class ItemService {
 
         items.forEach(item -> {
 
-            userMapper.changeMoney(item.getValue() * 3,item.getQq());
+            userMapper.changeMoney(item.getValue() * 2,item.getQq());
 
         });
 

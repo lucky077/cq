@@ -7,6 +7,7 @@ import com.example.entity.UserItem;
 import com.example.mapper.UserItemMapper;
 import com.example.mapper.UserMapper;
 import com.example.model.Replay;
+import com.example.util.LuckUtil;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -38,7 +39,17 @@ public class PKService {
             userbVal = 0;
         }
 
-        return useraVal > userbVal;
+        if (useraVal == 0 && userbVal == 0){
+            return LuckUtil.trueOrFalse(50);
+        }
+
+
+        double win = (double)useraVal / (double)(userbVal + useraVal) * 100.0;
+
+        System.out.println(win);
+
+
+        return LuckUtil.trueOrFalse(win);
 
     }
 
