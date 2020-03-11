@@ -237,7 +237,7 @@ public class ItemService {
         }
 
         if(from == 1 && list.isEmpty()){
-            Item item = itemMapper.selectOne(new QueryWrapper<Item>().select("*", "rand() rdm").orderByAsc("rdm").last("limit 1"));
+            Item item = itemMapper.selectOne(new QueryWrapper<Item>().eq("level","N").select("*", "rand() rdm").orderByAsc("rdm").last("limit 1"));
             if (item == null){
                 return -1;
             }
