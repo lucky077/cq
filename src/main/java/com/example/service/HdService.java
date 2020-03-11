@@ -82,14 +82,12 @@ public class HdService {
                 String card = "";
 
                 if (trueOrFalse(35)){
-                    List<Map> maps = userItemMapper.selectList(qq2);
-                    Map map;
-                    if ((map = getNoUr(maps)) != null){
-                        Integer id = Integer.valueOf(map.get("id").toString());
-                        String name = map.get("name").toString();
-                        String level = map.get("level").toString();
+                    List<Item> items = userItemMapper.selectList(qq2);
+                    Item item;
+                    if ((item = getNoUr(items)) != null){
+                        Integer id = item.getId();
                         userItemMapper.delete(new UpdateWrapper<UserItem>().eq("id",id));
-                        card = "\n跑的匆忙，不慎遗失符卡：" + name + "【" + level + "】";
+                        card = "\n跑的匆忙，不慎遗失符卡：" + item.toFullName();
                     }
 
                 }
@@ -105,14 +103,12 @@ public class HdService {
             String card = "";
 
             if (trueOrFalse(25)){
-                List<Map> maps = userItemMapper.selectList(qq2);
-                Map map;
-                if ((map = getNoUr(maps)) != null){
-                    Integer id = Integer.valueOf(map.get("id").toString());
-                    String name = map.get("name").toString();
-                    String level = map.get("level").toString();
+                List<Item> items = userItemMapper.selectList(qq2);
+                Item item;
+                if ((item = getNoUr(items)) != null){
+                    Integer id = item.getId();
                     userItemMapper.updateById(new UserItem().setId(id).setQq(user.getQq()));
-                    card = "\n符卡：" + name + "【" + level + "】";
+                    card = "\n符卡：" + item.toFullName();
                 }
 
             }
@@ -128,15 +124,12 @@ public class HdService {
 
                 String card = "";
                 if (trueOrFalse(25)){
-                    List<Map> maps = userItemMapper.selectList(user.getQq());
-                    Map map;
-                    if ((map = getNoUr(maps)) != null){
-
-                        Integer id = Integer.valueOf(map.get("id").toString());
-                        String name = map.get("name").toString();
-                        String level = map.get("level").toString();
+                    List<Item> items = userItemMapper.selectList(user.getQq());
+                    Item item;
+                    if ((item = getNoUr(items)) != null){
+                        Integer id = item.getId();
                         userItemMapper.updateById(new UserItem().setId(id).setQq(user2.getQq()));
-                        card = "\n符卡：" + name + "【" + level + "】";
+                        card = "\n符卡：" + item.toFullName();
                     }
 
                 }
@@ -150,19 +143,19 @@ public class HdService {
         }
 
     }
-    private Map getNoUr(List<Map> maps){
-        if(maps == null || maps.isEmpty()){
+    private Item getNoUr(List<Item> items){
+        if(items == null || items.isEmpty()){
             return null;
         }
 
-        maps = maps.stream().filter(map -> !map.get("level").toString().equals("UR")).collect(Collectors.toList());
+        items = items.stream().filter(item -> !item.getLevel().equals("UR")).collect(Collectors.toList());
 
-        if (maps.isEmpty()){
+        if (items.isEmpty()){
             return null;
         }
 
-        Collections.shuffle(maps);
-        return maps.get(0);
+        Collections.shuffle(items);
+        return items.get(0);
     }
     @CommandMapping(value = "查看仇敌*",menu = {"hd"},order = 1)
     public Object ckcd(Message message,Long qq2){

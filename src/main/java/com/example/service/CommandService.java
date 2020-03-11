@@ -182,7 +182,10 @@ public class CommandService {
         }else {
             user.setCheckDay(0);
         }
-        int addMoney = user.getCheckDay() + 1;
+        int addMoney = (user.getCheckDay() + 1) * 10;
+        if (addMoney > 288){
+            addMoney = 288;
+        }
         user.setCheckDate(new Date()).setMoney(user.getMoney() + addMoney);
 
         byte[] head = MyUtil.getHead(fromQQ);
@@ -201,7 +204,7 @@ public class CommandService {
     public String draw(User user){
 
         int add;
-        if (trueOrFalse(4.0)){
+        if (trueOrFalse(5.0)){
             add = randInt(500,1500);
         }else {
             add = randInt(10,100);

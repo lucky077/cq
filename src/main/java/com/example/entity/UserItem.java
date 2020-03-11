@@ -23,9 +23,6 @@ public class UserItem {
 
     private String itemName;
 
-    @TableField(exist = false)
-    private String level;
-
     private Long qq;
 
 }

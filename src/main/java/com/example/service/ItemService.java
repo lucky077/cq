@@ -29,6 +29,7 @@ import static com.example.util.LuckUtil.*;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
+import java.lang.reflect.Array;
 import java.text.MessageFormat;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -84,8 +85,8 @@ public class ItemService {
         user.setHonor(user.getHonor() + item.getLevelNum() * 1);
         friendMapper.setVal(user.getQq(),qq2,item.getLevelNum() * 2);
 
-        return MessageFormat.format("{0}赠送了{1}符卡：{2}【{3}】！\n你们的关系提升了\n你获得荣誉",
-                user.getName(),MyUtil.getCardName(getGroupMemberInfo(qq2)),item.getName(),item.getLevel());
+        return MessageFormat.format("{0}赠送了{1}符卡：{2}！\n你们的关系提升了\n你获得荣誉",
+                user.getName(),MyUtil.getCardName(getGroupMemberInfo(qq2)),item.toFullName());
     }
 
     @CommandMapping(value = {"献祭*"},menu = {"fk"},tili = -50,notes = "献祭符卡进行占星，消耗50体力和一定金币")
@@ -149,7 +150,7 @@ public class ItemService {
             return -1;
         }
 
-        if ((itemName2.contains("[CQ") || itemName2.length() > 32) && !message.getUser().getQq().equals(new Long("2676056197"))){
+        if (isNotName(itemName)){
             sendGroupMsg("名称不合法");
             return -1;
         }
@@ -226,7 +227,7 @@ public class ItemService {
                     return -1;
                 }
                 userItemMapper.insert(new UserItem().setItemId(item.getId()).setItemName(item.getName()).setQq(user.getQq()));
-                list.add(item.getName() + "【" +item.getLevel()+ "】");
+                list.add(item.toFullName());
             }else if (trueOrFalse(46.1)){
                 if (trueOrFalse(10)){
                     money += randInt(200,500);
@@ -295,7 +296,7 @@ public class ItemService {
             return -1;
         }
 
-        List<Map> list = userItemMapper.selectList(qq2);
+        List<Item> list = userItemMapper.selectList(qq2);
 
         Map map = new HashMap();
         map.put("list",list);
@@ -310,7 +311,7 @@ public class ItemService {
             return -1;
         }
 
-        if ((itemName.contains("[CQ")|| itemName.length() > 32) && !message.getUser().getQq().equals(new Long("2676056197"))){
+        if (isNotName(itemName)){
             sendGroupMsg("名称不合法");
             return -1;
         }
@@ -333,9 +334,11 @@ public class ItemService {
         if (count > 0){
             return "每天仅能召唤一次";
         }
-        Long value = rdmValue();
-        Integer levelNum = getLevelNum(value);
-        Item item = new Item().setQq(user.getQq()).setName(itemName).setValue(value).setLevel(levelNumMap.get(levelNum)).setLevelNum(levelNum);
+
+        Integer levelNum = rdmLevelNum();
+        Long value = getValue(levelNum);
+        String type = getType();
+        Item item = new Item().setQq(user.getQq()).setName(itemName).setType(type).setValue(value).setLevel(levelNumMap.get(levelNum)).setLevelNum(levelNum);
 
         try{
             itemMapper.insert(item);
@@ -343,12 +346,12 @@ public class ItemService {
             return "名称重复";
         }
 
-        if (trueOrFalse(4)){
-            userItemMapper.insert(new UserItem().setItemId(item.getId()).setItemName(itemName).setQq(user.getQq()));
+        if (trueOrFalse(5)){
+            userItemMapper.insert(new UserItem().setItemId(item.getId()).setItemName(item.toFullName()).setQq(user.getQq()));
             sendGroupMsg("召唤者" + user.getName() + "被" + itemName + "选中了！" );
         }
 
-        return user.getName() + "召唤了" + itemName + "【"+ item.getLevel() +"】";
+        return user.getName() + "召唤了" + item.toFullName();
     }
 
     private Boolean lock = false;
@@ -369,7 +372,7 @@ public class ItemService {
 
             if (currentGoods != null){
                 UserItem userItem = currentGoods.getUserItem();
-                return "当前正在拍卖" + userItem.getItemName() + "【"+ userItem.getLevel() +"】";
+                return "当前正在拍卖" + userItem.getItemName();
             }
 
             if (lock){
@@ -397,15 +400,14 @@ public class ItemService {
             }
 
 
-            userItem.setItemName(item.getName());
-            userItem.setLevel(item.getLevel());
+            userItem.setItemName(item.toFullName());
             goods.setUserItem(userItem);
             goods.setPrice(value);
             goods.setLastPrice(value - 1);
             currentGoods = goods;
             lock = true;
 
-            sendGroupMsg(user.getName() + "开始拍卖" + userItem.getItemName() + "【"+ userItem.getLevel() +"】了\n起价" + value + "\n发送出价 + 价格参与拍卖");
+            sendGroupMsg(user.getName() + "开始拍卖" + userItem.getItemName() + "了\n起价" + value + "\n发送出价 + 价格参与!");
 
         }
 
@@ -421,7 +423,7 @@ public class ItemService {
             Long lastQQ = currentGoods.getLastQQ();
 
             if (lastQQ == null){
-                sendGroupMsg(userItem.getItemName() + "【"+ userItem.getLevel() +"】流拍");
+                sendGroupMsg(userItem.getItemName() + "流拍");
                 currentGoods = null;
                 lock = false;
                 return;
@@ -436,7 +438,7 @@ public class ItemService {
 
             Member info = getGroupMemberInfo(lastQQ);
 
-            sendGroupMsg(MyUtil.getCardName(info) + "以" + price + "金币拍下了" + userItem.getItemName() + "【"+ userItem.getLevel() +"】");
+            sendGroupMsg(MyUtil.getCardName(info) + "以" + price + "金币拍下了" + userItem.getItemName());
 
             currentGoods = null;
             lock = false;
@@ -492,7 +494,7 @@ public class ItemService {
 
                     currentGoods = null;
 
-                    return MyUtil.getCardName(info) + "以" + value + "金币拍下了" + userItem.getItemName() + "【"+ userItem.getLevel() +"】";
+                    return MyUtil.getCardName(info) + "以" + value + "金币拍下了" + userItem.getItemName();
                 }
 
             }
@@ -515,7 +517,7 @@ public class ItemService {
 
         items.forEach(item -> {
 
-            userMapper.changeMoney(item.getValue() * 2,item.getQq());
+            userMapper.changeMoney(item.getValue() * 2L,item.getQq());
 
         });
 
@@ -525,22 +527,27 @@ public class ItemService {
         return "符卡数据已经全部清空，之前拥有符卡已经兑换成金币";
     }
 
-    private Long rdmValue(){
+    private static long getValue(int i){
         long value = 0;
-        //
-        if (trueOrFalse(3)){
-            value = randInt(100,1500);
-        }else if (trueOrFalse(14)){
-            value = randInt(50,500);
-        }else {
-            value = randInt(1,100);
-        }
 
+        if (i == 5){
+            value = randInt(800,1999);
+        } else if(i == 4){
+            value = randInt(500,799);
+        } else if(i == 3){
+            value = randInt(250,499);
+        } else if(i == 2){
+            value = randInt(100,249);
+        } else if(i == 1){
+            value = randInt(1,99);
+        }
 
         return value;
     }
 
-    Map<Integer,String> levelNumMap = new HashMap<Integer,String> (){{
+
+
+    private static Map<Integer,String> levelNumMap = new HashMap<Integer,String> (){{
         put(1,"N");
         put(2,"R");
         put(3,"SR");
@@ -548,23 +555,29 @@ public class ItemService {
         put(5,"UR");
     }};
 
-    private Integer getLevelNum(long value){
-
-        Integer level = 1;
-
-        if (value >= 70 && value < 150){
-            level = 2;
-        }else if(value >= 150 && value < 400){
-            level = 3;
-        }else if(value >= 400 && value < 800){
-            level = 4;
-        }else if(value >= 800){
-            level = 5;
-        }
-
-        return level;
+    private static String getType() {
+        return typeNumMap.get(getOne(Arrays.asList(3.0,3.0,18.8,18.8,18.8,18.8,18.8)) + 1);
     }
 
+    private static Map<Integer,String> typeNumMap = new HashMap<Integer,String> (){{
+        put(1,"幽");
+        put(2,"暗");
+        put(3,"灵");
+        put(4,"梦");
+        put(5,"雪");
+        put(6,"月");
+        put(7,"幻");
+    }};
+
+    private static Integer rdmLevelNum(){
+
+        List<Double> list = Arrays.asList(46.0,30.0,15.0,6.0,3.0);
+        return getOne(list) + 1;
+    }
+
+    private static boolean isNotName(String name){
+        return (name.contains("[CQ")|| name.length() > 32) || name.contains("【") || name.contains("】");
+    }
 
 
 

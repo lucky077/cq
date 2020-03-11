@@ -20,6 +20,9 @@ public class Item {
 
     private String name;
 
+    //幽 暗 灵 梦 雪 月 幻
+    private String type;
+
     private Long value;
 
     private Long qq;
@@ -29,6 +32,10 @@ public class Item {
     private Integer levelNum;
 
     private Date createDate;
+
+    public String toFullName(){
+        return name + "【" + type + "】【" + level + "】";
+    }
 
 
 }
