@@ -128,7 +128,7 @@ public class ItemService {
 
 
 
-        return new ModelAndView("zx",(Map)zx0(message,10 + item.getLevelNum() * 5));
+        return new ModelAndView("zx",(Map)zx0(message,10 + item.getLevelNum() * 5,2));
     }
 
     @CommandMapping(value = {"符卡列表"},menu = {"fk"})
@@ -177,7 +177,7 @@ public class ItemService {
         return "修改成功";
     }
 
-    @CommandMapping(value = {"金币占星"},menu = {"fk"},notes = "1888金币抽符卡")
+    @CommandMapping(value = {"金币占星"},menu = {"fk"},notes = "2888金币抽符卡")
     public Object jbzx(Message message){
 
         User user = message.getUser();
@@ -190,13 +190,13 @@ public class ItemService {
             return -1;
         }
 
-        if (user.getMoney() < 1888){
-            sendGroupMsg("需要1888金币！");
+        if (user.getMoney() < 2888){
+            sendGroupMsg("需要2888金币！");
             return -1;
         }
 
-        user.setMoney(user.getMoney() - 1888);
-        return new ModelAndView("zx",(Map)zx0(message,10));
+        user.setMoney(user.getMoney() - 2888);
+        return new ModelAndView("zx",(Map)zx0(message,10,1));
     }
     @CommandMapping(value = {"占星"},menu = {"fk"},notes = "免费抽符卡")
     @Times(interval = 3600 * 20)
@@ -210,10 +210,10 @@ public class ItemService {
             return -1;
         }
 
-        return zx0(message,10);
+        return zx0(message,10,0);
 
     }
-    private Object zx0(Message message,int count){
+    private Object zx0(Message message,int count,int from){
         User user = message.getUser();
 
         List<String> list = new ArrayList<>();
@@ -234,6 +234,15 @@ public class ItemService {
                 }
                 money += randInt(1,30);
             }
+        }
+
+        if(from == 1 && list.isEmpty()){
+            Item item = itemMapper.selectOne(new QueryWrapper<Item>().select("*", "rand() rdm").orderByAsc("rdm").last("limit 1"));
+            if (item == null){
+                return -1;
+            }
+            userItemMapper.insert(new UserItem().setItemId(item.getId()).setItemName(item.getName()).setQq(user.getQq()));
+            list.add(item.toFullName());
         }
 
         user.setMoney(user.getMoney() + money);
