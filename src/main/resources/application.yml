@@ -1,5 +1,5 @@
 spring:
   profiles:
-    active: prod
+    active: dev
   thymeleaf:
     prefix: classpath:/template/html/

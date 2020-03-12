@@ -3,6 +3,7 @@ package com.example.mapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.example.entity.Item;
 import com.example.entity.UserItem;
+import com.example.model.TypeValue;
 import org.apache.ibatis.annotations.Select;
 
 import java.util.List;
@@ -23,4 +24,6 @@ public interface UserItemMapper extends BaseMapper<UserItem> {
     @Select("select i.* from useritem ui,item i where i.id = ui.item_id and ui.qq = #{qq} order by i.value desc limit 1")
     Item selectMax(Object qq);
 
+    @Select("select type,count(0) count,sum(i.level_num) sumLevel,sum(i.`value`) sumValue from useritem ui , item i where ui.item_id = i.id and ui.qq = #{qq} group by type")
+    List<TypeValue> selectTypeValue(Object qq);
 }

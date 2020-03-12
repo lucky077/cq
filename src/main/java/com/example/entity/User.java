@@ -3,6 +3,7 @@ package com.example.entity;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
+import com.example.model.TypeValue;
 import com.example.util.MyUtil;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -20,7 +21,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Accessors(chain = true)
-@EqualsAndHashCode(exclude = {"checkDate","createDate","name"})
+@EqualsAndHashCode(exclude = {"checkDate","createDate","name","typeValues"})
 public class User implements Cloneable{
 
     @TableId
@@ -30,6 +31,9 @@ public class User implements Cloneable{
 
     @TableField(exist = false)
     private String name;
+
+    @TableField(exist = false)
+    private List<TypeValue> typeValues;
 
     private Long money = 0l;
     //体力
@@ -52,7 +56,7 @@ public class User implements Cloneable{
 
     public boolean equalsAndSetNull(Object obj){
 
-        return MyUtil.equalsAndSetNull(this,obj,"qq");
+        return MyUtil.equalsAndSetNull(this,obj,"qq","typeValues");
     }
 
     @Override

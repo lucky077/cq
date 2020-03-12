@@ -33,8 +33,11 @@ public class Item {
 
     private Date createDate;
 
+//    public String toFullName(){
+//        return name + "【" + type + "】【" + level + "】";
+//    }
     public String toFullName(){
-        return name + "【" + type + "】【" + level + "】";
+        return "[" + type + "]" + name + "【" + level + "】";
     }
 
 

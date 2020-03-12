@@ -14,6 +14,7 @@ import com.example.mapper.UserItemMapper;
 import com.example.mapper.UserMapper;
 import com.example.model.Message;
 import com.example.model.Replay;
+import com.example.model.TypeValue;
 import com.example.util.FtlUtil;
 import com.example.util.H;
 import com.example.util.LuckUtil;
@@ -63,31 +64,31 @@ public class HdService {
         }
 
         Member groupMemberInfo = getGroupMemberInfo(qq2);
-        if (user2.getMoney() < 2){
-            //return "对方太穷了,找个有钱人打劫吧";
-        }
-
         user2.setName(MyUtil.getCardName(groupMemberInfo));
+
 
         boolean pk = pkService.pk(user,user2);
 
 
         friendMapper.setVal(user.getQq(),qq2,-6);
 
-
+        double an2 = TypeValue.getOne(user2.getTypeValues(), "暗").getSumLevel() * 2.0;
+        double an1 = TypeValue.getOne(user.getTypeValues(), "暗").getSumLevel() * 2.0;
+        double you1 = TypeValue.getOne(user.getTypeValues(), "幽").getSumLevel() * 2.0;
+        double you2 = TypeValue.getOne(user2.getTypeValues(), "幽").getSumLevel() * 2.0;
 
         if (pk){
-            if (trueOrFalse(20.0)){
+            if (trueOrFalse(20.0 + an2) ){
 
                 String card = "";
 
-                if (trueOrFalse(35)){
+                if (trueOrFalse(35.0 - an2 * 1.5)){
                     List<Item> items = userItemMapper.selectList(qq2);
                     Item item;
                     if ((item = getNoUr(items)) != null){
                         Integer id = item.getId();
                         userItemMapper.delete(new UpdateWrapper<UserItem>().eq("id",id));
-                        card = "\n跑的匆忙，不慎遗失符卡：" + item.toFullName();
+                        card = "\n跑的匆忙，途中不慎遗失符卡：" + item.toFullName();
                     }
 
                 }
@@ -102,7 +103,7 @@ public class HdService {
 
             String card = "";
 
-            if (trueOrFalse(25)){
+            if (trueOrFalse(25.0 + you1)){
                 List<Item> items = userItemMapper.selectList(qq2);
                 Item item;
                 if ((item = getNoUr(items)) != null){
@@ -123,7 +124,7 @@ public class HdService {
                 userMapper.updateById0(user2);
 
                 String card = "";
-                if (trueOrFalse(25)){
+                if (trueOrFalse(25 + you2 - an1)){
                     List<Item> items = userItemMapper.selectList(user.getQq());
                     Item item;
                     if ((item = getNoUr(items)) != null){
@@ -134,8 +135,8 @@ public class HdService {
 
                 }
 
-                return MessageFormat.format("什么都没捞到，还被{0}反抢了{1}金币！{2}\n你们的关系恶化了",
-                        user2.getName(),add,card);
+                return MessageFormat.format("{3}什么都没捞到，被{0}抢了{1}金币！{2}\n你们的关系恶化了",
+                        user2.getName(),add,card,user.getName());
             }
 
             return MessageFormat.format("你打不过{0}\n你们的关系恶化了",

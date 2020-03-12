@@ -131,11 +131,19 @@ public class ItemService {
         return new ModelAndView("zx",(Map)zx0(message,10 + item.getLevelNum() * 5,2));
     }
 
-    @CommandMapping(value = {"符卡列表"},menu = {"fk"})
+    @CommandMapping(value = {"符卡列表*"},menu = {"fk"})
     @Times(interval = 3600,limit = 1)
-    public Object fklb(Message message,String itemName){
+    public Object fklb(Message message,String type){
 
-        List<Item> list = itemMapper.selectList(new QueryWrapper<Item>().orderByDesc("value").last("limit 30"));
+        boolean condition = true;
+
+        condition = !StringUtils.isEmpty(type);
+
+        if (condition && !PKService.types.contains(type)){
+            return -1;
+        }
+
+        List<Item> list = itemMapper.selectList(new QueryWrapper<Item>().eq(condition,"type",type).orderByDesc("value").last("limit 30"));
 
         Map map = new HashMap();
         map.put("list",list);
@@ -177,7 +185,7 @@ public class ItemService {
         return "修改成功";
     }
 
-    @CommandMapping(value = {"金币占星"},menu = {"fk"},notes = "2888金币抽符卡")
+    @CommandMapping(value = {"金币占星"},menu = {"fk"},notes = "5888金币抽符卡（保底一张卡）")
     public Object jbzx(Message message){
 
         User user = message.getUser();
@@ -190,12 +198,12 @@ public class ItemService {
             return -1;
         }
 
-        if (user.getMoney() < 2888){
-            sendGroupMsg("需要2888金币！");
+        if (user.getMoney() < 5888){
+            sendGroupMsg("需要5888金币！");
             return -1;
         }
 
-        user.setMoney(user.getMoney() - 2888);
+        user.setMoney(user.getMoney() - 5888);
         return new ModelAndView("zx",(Map)zx0(message,10,1));
     }
     @CommandMapping(value = {"占星"},menu = {"fk"},notes = "免费抽符卡")
@@ -237,7 +245,7 @@ public class ItemService {
         }
 
         if(from == 1 && list.isEmpty()){
-            Item item = itemMapper.selectOne(new QueryWrapper<Item>().eq("level","N").select("*", "rand() rdm").orderByAsc("rdm").last("limit 1"));
+            Item item = itemMapper.selectOne(new QueryWrapper<Item>().select("*", "rand() rdm").orderByAsc("rdm").last("limit 1"));
             if (item == null){
                 return -1;
             }
@@ -311,6 +319,27 @@ public class ItemService {
         map.put("list",list);
         map.put("userName",MyUtil.getCardName(info));
         return map;
+    }
+
+    //@PostConstruct
+    public void qqq(){
+        String[] names = {"御坂美琴","时崎狂三","白井黑子","无极剑圣","一方通行","梦梦","娜娜","伊莉雅","狂热者","探机"
+                ,"泽拉图","凯瑞甘","阿塔尼斯","鸢一折纸","四糸乃","四糸奈","五河琴里","夜刀神十香","上条当麻","亚丝娜","末日使者"
+                ,"萌王","蕾姆"};
+
+
+        for (String name : names) {
+            Integer levelNum = rdmLevelNum();
+            Long value = getValue(levelNum);
+            String type = getType();
+            Item item = new Item().setQq(0L).setName(name).setType(type).setValue(value).setLevel(levelNumMap.get(levelNum)).setLevelNum(levelNum);
+
+            try{
+                itemMapper.insert(item);
+            }catch (Exception e){
+            }
+        }
+
     }
 
     @CommandMapping(value = {".召唤*"},menu = {"fk"},notes = "召唤新符卡到池中")
