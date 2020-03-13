@@ -43,6 +43,14 @@ public class User implements Cloneable{
 
     private Integer checkDay = 0;
 
+    private Long bankMoney = 0L;
+
+    private Integer bankItem = 0;
+
+    private Integer bankScore = 0;
+
+    private Integer bank_overdue = 0;
+
     private Date checkDate;
 
     private Date createDate;

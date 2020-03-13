@@ -12,6 +12,7 @@ import org.apache.ibatis.annotations.Update;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -29,6 +30,24 @@ public interface UserMapper extends BaseMapper<User> {
 
     @Update("update user set money = money + #{money} where qq = #{qq}")
     void changeMoney(User user);
+
+
+    @Update("update user set bank_money = bank_money + bank_money * 0.2")
+    void changeBankMoney();
+
+    @Update("update user set bank_overdue = bank_overdue + 1 where bank_money < 0")
+    void changeBankOverdue();
+
+    @Select("select * from user where bank_overdue > 3")
+    List<User> getBankOverdue();
+
+    @Select("select sum(bank_money) from user where bank_money > 20")
+    Long getSumBankMoney();
+
+
+    @Update("update user set bank_money = bank_money - bank_money/#{i}")
+    void reduceBankMoney(Object i);
+
 
     default User selectById0(Serializable id){
         User user = this.selectById(id);

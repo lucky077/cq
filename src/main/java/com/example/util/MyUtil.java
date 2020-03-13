@@ -52,7 +52,7 @@ public class MyUtil {
                 declaredField.setAccessible(true);
                 Object o1 = declaredField.get(obj1);
                 Object o2 = declaredField.get(obj2);
-                if (o1.equals(o2)){
+                if (Objects.equals(o1,o2)){
                     declaredField.set(obj2,null);
                 }else{
                     declaredField.set(obj2,o1);

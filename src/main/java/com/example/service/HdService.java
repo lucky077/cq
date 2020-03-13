@@ -53,7 +53,7 @@ public class HdService {
 
     @CommandMapping(value = {"打劫*","抢劫*"},menu = {"hd"},tili = -30)
     public Object dj(Message message,Long qq2){
-        if (qq2 == null || message.getFromQQ().equals(qq2)){
+        if (qq2 == null || message.getFromQQ().equals(qq2) || qq2 < 10000L){
             return -1;
         }
 
@@ -118,7 +118,7 @@ public class HdService {
                     user2.getName(),add,card);
         }else {
             if (trueOrFalse(35.0)){
-                long add = user.getMoney() / randInt(4,12) + 1;
+                long add = user.getMoney() / randInt(8,20) + 1;
                 user2.setMoney(add + user2.getMoney());
                 user.setMoney(user.getMoney() - add);
                 userMapper.updateById0(user2);

@@ -2,6 +2,7 @@ package com.example.config;
 
 import com.example.Variable;
 import com.example.entity.Friend;
+import com.example.entity.User;
 import com.example.mapper.FriendMapper;
 import com.example.mapper.UserMapper;
 import org.springframework.context.annotation.Configuration;
@@ -27,6 +28,13 @@ public class ScheduConfig {
         int i1 = friendMapper.guanxiUp(5, -59, -10);
         int i2 = friendMapper.guanxiUp(1, -9, -1);
         System.out.println(i + i1 + i2 + "个关系提升了");
+
+
+        userMapper.changeBankMoney();
+        userMapper.changeBankOverdue();
+
+        List<User> overdueUserList = userMapper.getBankOverdue();
+
 
     }
     @Scheduled(cron = "0 0/30 * * * ?")
