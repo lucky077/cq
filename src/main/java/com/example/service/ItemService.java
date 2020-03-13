@@ -7,10 +7,7 @@ import com.example.annotation.Times;
 import com.example.entity.Item;
 import com.example.entity.User;
 import com.example.entity.UserItem;
-import com.example.mapper.FriendMapper;
-import com.example.mapper.ItemMapper;
-import com.example.mapper.UserItemMapper;
-import com.example.mapper.UserMapper;
+import com.example.mapper.*;
 import com.example.model.Goods;
 import com.example.model.Message;
 import com.example.util.LuckUtil;
@@ -48,6 +45,8 @@ public class ItemService {
     private UserItemMapper userItemMapper;
     @Resource
     private FriendMapper friendMapper;
+    @Resource
+    private DumpMapper dumpMapper;
 
 
 
@@ -384,7 +383,7 @@ public class ItemService {
             return "名称重复";
         }
 
-        if (trueOrFalse(5)){
+        if (trueOrFalse(10)){
             userItemMapper.insert(new UserItem().setItemId(item.getId()).setItemName(item.toFullName()).setQq(user.getQq()));
             sendGroupMsg("召唤者" + user.getName() + "被" + itemName + "选中了！" );
         }
@@ -561,6 +560,8 @@ public class ItemService {
 
         userItemMapper.delete(null);
         itemMapper.delete(null);
+        dumpMapper.delete(null);
+
 
         return "符卡数据已经全部清空，之前拥有符卡已经兑换成金币";
     }

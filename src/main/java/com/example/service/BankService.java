@@ -2,19 +2,25 @@ package com.example.service;
 
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.example.annotation.CommandMapping;
-import com.example.entity.Item;
-import com.example.entity.User;
-import com.example.entity.UserItem;
-import com.example.mapper.ItemMapper;
-import com.example.mapper.UserItemMapper;
-import com.example.mapper.UserMapper;
+import com.example.entity.*;
+import com.example.mapper.*;
 import com.example.model.Message;
+import com.example.model.TypeValue;
 import com.example.util.MyUtil;
+import com.sobte.cqp.jcq.entity.Member;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
+
+import static com.example.Demo.getGroupMemberInfo;
 import static com.example.Demo.sendGroupMsg;
 import static com.example.Variable.currentGoods;
 import static com.example.util.LuckUtil.*;
@@ -33,13 +39,64 @@ public class BankService {
     private UserMapper userMapper;
 
     @Resource
+    private DumpMapper dumpMapper;
+
+    @Resource
     private PKService pkService;
+
+    @Resource
+    private FriendMapper friendMapper;
+
+    @Autowired
+    private StringRedisTemplate redisTemplate;
 
 
     @CommandMapping(value = {"银行"},menu = {"cd"})
     public Object yh(Message message){
         String cd = MyUtil.getChildMenu("yh");
         return cd;
+    }
+
+    @CommandMapping(value = {"银行信息"},menu = {"yh"})
+    public Object yhxx(Message message){
+        StringBuilder sb = new StringBuilder();
+        User user = message.getUser();
+        Long bankMoney = user.getBankMoney();
+
+        sb.append(user.getName() + "的银行信息：\n");
+
+        if (bankMoney > 0){
+            sb.append("存款：" + bankMoney + "\n");
+        }else if(bankMoney < 0){
+            sb.append("欠款：" + bankMoney + "\n");
+        }
+        int day = user.getBankOverdue() - 1;
+        day = day < 0 ? 0 : day;
+        sb.append("你当前最多可借款：" + user.getBankScore() + "\n");
+        sb.append("你当前逾期：" + (day) + "天");
+
+        return sb.toString();
+    }
+
+    @CommandMapping(value = {"信用评估"},menu = {"yh"})
+    public Object xypg(Message message){
+
+        User user = message.getUser();
+        if (user.getBankScore() > 0){
+            return -1;
+        }
+
+        Integer value = userItemMapper.selectMyValue(user.getQq());
+
+        if (value == null){
+            value = 0;
+        }
+
+        value += Integer.parseInt(String.valueOf(user.getMoney())) * 3;
+
+        user.setBankScore(value);
+
+        return "你最多能贷款" + value;
     }
 
     @CommandMapping(value = {"存款*","存钱*"},menu = {"yh"})
@@ -52,6 +109,10 @@ public class BankService {
         User user = message.getUser();
 
         Long money = user.getMoney();
+
+        if (user.getBankScore() < 1){
+            return "请先进行信用评估";
+        }
 
         if (tMoney > money){
             sendGroupMsg("余额不足");
@@ -96,7 +157,7 @@ public class BankService {
         Long money = user.getBankMoney();
 
         if (tMoney > money + user.getBankScore()){
-            sendGroupMsg("余额不足");
+            sendGroupMsg("信用不足");
             return -1;
         }
 
@@ -115,6 +176,10 @@ public class BankService {
 
         User user = message.getUser();
 
+        if (user.getBankMoney() > -1){
+            return "你没有借款信息";
+        }
+
         Long money = user.getMoney();
 
         if (tMoney > money){
@@ -123,7 +188,12 @@ public class BankService {
         }
 
         user.setMoney(money - tMoney);
+        if (tMoney * 1.0 >= -user.getBankMoney() / 2.0){
+            user.setBankOverdue(0);
+        }
         user.setBankMoney(user.getBankMoney() + tMoney);
+
+
 
         return "成功还款" + tMoney + "到银行";
     }
@@ -169,7 +239,7 @@ public class BankService {
         User user = message.getUser();
         Integer bankItem = user.getBankItem();
 
-        if (bankItem == null){
+        if (bankItem == 0){
             sendGroupMsg("你在银行没有符卡");
             return -1;
         }
@@ -192,6 +262,9 @@ public class BankService {
 
         boolean pk = pkService.pk(user, user2);
 
+        double an = TypeValue.getOne(user.getTypeValues(), "暗").getSumLevel() * 2.0;
+        double you = TypeValue.getOne(user2.getTypeValues(), "幽").getSumLevel() * 2.0;
+
         if (pk){
             long sum = 0;
             int i = randInt(7, 11) + 1;
@@ -204,10 +277,106 @@ public class BankService {
                 sum += (sumBankMoney / i);
             }
             user.setMoney(user.getMoney() + sum);
+            user.setHonor(user.getHonor() - 1);
             return "成功抢走了银行" + sum + "金币";
+        }else {
+            if (trueOrFalse(70.0 + an - you)){
+                String card = "";
+                if (trueOrFalse(50.0 - an * 1.5)){
+                    List<Item> items = userItemMapper.selectList(user.getQq());
+                    Item item;
+                    if ((item = HdService.getNoUr(items)) != null){
+                        Integer id = item.getId();
+                        UserItem userItem = userItemMapper.selectById(id);
+                        userItemMapper.delete(new UpdateWrapper<UserItem>().eq("id",id));
+                        dumpMapper.insert(new Dump().setItemId(userItem.getItemId()));
+                        card = "\n跑的匆忙，途中不慎遗失符卡：" + item.toFullName();
+                    }
+                }
+                return "什么都没捞到，但是侥幸逃跑了" + card;
+            } else {
+                String key = "bankBan:" + user.getQq();
+                redisTemplate.opsForValue().set(key,"1",60, TimeUnit.MINUTES);
+                return "你打不过银行,被关进监狱60分钟";
+            }
         }
 
-        return "";
+
+    }
+
+    @CommandMapping(value = {"劫狱"},tili = -20,menu = {"yh"},notes = "")
+    @Transactional
+    public Object jy(Message message){
+
+        Set<String> keys = redisTemplate.keys("bankBan:*");
+        if (keys.isEmpty()){
+            sendGroupMsg("监狱没有人");
+            return -1;
+        }
+
+
+        User user = message.getUser();
+        User user2 = new User().setQq(-1L);
+
+        boolean pk = pkService.pk(user, user2);
+
+        if (pk){
+
+            for (String key : keys) {
+                redisTemplate.delete(key);
+                key = key.replace("bankBan:","");
+                long qq = Long.valueOf(key);
+                user.setHonor(user.getHonor());
+                friendMapper.setVal(qq,user.getQq(),12);
+            }
+            return "你拯救了" + keys.size() + "人，你们的关系提升了，你获得荣誉";
+
+        }else {
+            return "劫狱失败";
+        }
+
+    }
+
+    public void qingsuan(List<User> users){
+
+        users.forEach(user -> {
+            Long qq = user.getQq();
+            Member info = getGroupMemberInfo(qq);
+            String name = MyUtil.getCardName(info);
+            Long bankMoney = user.getBankMoney();
+            Long money = user.getMoney();
+            if (money >= -bankMoney){
+                user.setMoney(money + bankMoney);
+                bankMoney = 0L;
+            }else if (money > 0){
+                user.setMoney(0L);
+                bankMoney += money;
+            }
+            sendGroupMsg(name + "的财产已经被银行清算");
+
+
+            List<Item> items = userItemMapper.selectList(qq);
+
+            for (Item item : items) {
+                if (bankMoney >= 0){
+                    break;
+                }
+                long value = item.getValue() * 3;
+                userItemMapper.updateById(new UserItem().setId(item.getId()).setQq(-1L));
+                bankMoney += value;
+                sendGroupMsg(name + "的符卡："+ item.toFullName() +"已经被银行清算");
+            }
+
+            if (bankMoney < 0){
+                user.setBankScore(0);
+                sendGroupMsg("银行不再信任" + name);
+            }
+            user.setBankOverdue(0);
+            user.setBankMoney(bankMoney = 0L);
+            userMapper.updateById0(user);
+
+        });
+
     }
 
 

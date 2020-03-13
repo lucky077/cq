@@ -17,6 +17,7 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.springframework.util.StringUtils;
+import org.springframework.web.servlet.ModelAndView;
 
 import javax.annotation.Resource;
 import java.io.File;
@@ -24,6 +25,7 @@ import java.time.LocalDate;
 import java.util.*;
 import java.util.Date;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.stream.Collectors;
 
 import static com.example.Demo.*;
 import static com.example.Variable.*;
@@ -85,7 +87,7 @@ public class CommandService {
             limit = 10;
         }
 
-        List<User> users = userMapper.selectList(new QueryWrapper<User>().eq("group_id",message.getFromGroup()).orderByDesc("money").select("qq", "money").last("limit " + limit));
+        List<User> users = userMapper.selectList(new QueryWrapper<User>().eq("group_id",message.getFromGroup()).gt("qq",9999).orderByDesc("money").select("qq", "money").last("limit " + limit));
 
         users.forEach(user -> {
             Member info = getGroupMemberInfo(user.getQq());
@@ -96,6 +98,28 @@ public class CommandService {
         }};
 
         return data;
+    }
+
+    @CommandMapping(value = {"真实财富排名*","真实财富排行*"},menu = {"cd"})
+    public Object zscfpm(Message message,Integer limit){
+
+        if (limit == null || limit > 10){
+            limit = 10;
+        }
+
+        List<User> users = userMapper.selectListzs(message.getFromGroup(),limit);
+
+        users.forEach(user -> {
+            user.setMoney(user.getMoney() + user.getBankMoney());
+            Member info = getGroupMemberInfo(user.getQq());
+            user.setName(MyUtil.getCardName(info));
+        });
+        List<User> finalUsers = users;
+        Map data = new HashMap(){{
+            put("list", finalUsers);
+        }};
+
+        return new ModelAndView("cfpm",data);
     }
 
 

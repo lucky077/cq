@@ -49,7 +49,7 @@ public class User implements Cloneable{
 
     private Integer bankScore = 0;
 
-    private Integer bank_overdue = 0;
+    private Integer bankOverdue;
 
     private Date checkDate;
 

@@ -62,6 +62,13 @@ public class TestAspectJ {
         Message message = (Message)args[0];;
         final Long fromQQ = message.getFromQQ();
 
+        String bankBanKey = "bankBan:"+fromQQ;
+        String bankBan = stringRedisTemplate.opsForValue().get(bankBanKey);
+        if (bankBan != null){
+            Long expire = stringRedisTemplate.opsForValue().getOperations().getExpire(bankBanKey);
+            sendGroupMsg("还有" + (int)(Math.ceil(expire / 60.0)) + "分钟可以从监狱释放");
+            return null;
+        }
 
         User user = userMapper.selectById0(fromQQ);
         Member info = getGroupMemberInfo(user.getQq());

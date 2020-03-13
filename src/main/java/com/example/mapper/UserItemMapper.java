@@ -12,13 +12,13 @@ import java.util.Map;
 public interface UserItemMapper extends BaseMapper<UserItem> {
 
 
-    @Select("select ui.id,i.name,i.level,i.`type` from useritem ui,item i where i.id = ui.item_id and ui.qq = #{qq} order by i.value desc")
+    @Select("select ui.id,i.name,i.value,i.level,i.`type` from useritem ui,item i where i.id = ui.item_id and ui.qq = #{qq} order by i.value desc")
     List<Item> selectList(Object qq);
 
     @Select("select sum(i.value) from useritem ui,item i where i.id = ui.item_id and ui.qq = #{qq}")
     Integer selectMyValue(Object qq);
 
-    @Select("select ui.qq,sum(i.value) value from useritem ui,item i where i.id = ui.item_id group by ui.qq")
+    @Select("select ui.qq,sum(i.value) value from useritem ui,item i where i.id = ui.item_id and ui.qq > 9999 group by ui.qq")
     List<Item> selectAllValue();
 
     @Select("select i.* from useritem ui,item i where i.id = ui.item_id and ui.qq = #{qq} order by i.value desc limit 1")

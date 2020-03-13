@@ -4,14 +4,8 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.example.annotation.CommandMapping;
 import com.example.annotation.Times;
-import com.example.entity.Friend;
-import com.example.entity.Item;
-import com.example.entity.User;
-import com.example.entity.UserItem;
-import com.example.mapper.FriendMapper;
-import com.example.mapper.ItemMapper;
-import com.example.mapper.UserItemMapper;
-import com.example.mapper.UserMapper;
+import com.example.entity.*;
+import com.example.mapper.*;
 import com.example.model.Message;
 import com.example.model.Replay;
 import com.example.model.TypeValue;
@@ -50,6 +44,25 @@ public class HdService {
     @Autowired
     private StringRedisTemplate redisTemplate;
 
+    @Resource
+    private DumpMapper dumpMapper;
+
+    @CommandMapping(value = "捡垃圾",menu = "hd")
+    @Times(tip = "24小时内只能使用一次")
+    public Object jlj(Message message){
+        User user = message.getUser();
+        List<Dump> dumps = dumpMapper.selectList(null);
+        if (dumps.isEmpty() || trueOrFalse(50)){
+            return "什么都没捡到";
+        }
+        Collections.shuffle(dumps);
+        Dump dump = dumps.get(0);
+        Item item = itemMapper.selectById(dump.getItemId());
+        dumpMapper.deleteById(dump.getId());
+        userItemMapper.insert(new UserItem().setQq(user.getQq()).setItemId(dump.getItemId()).setItemName(item.toFullName()));
+        return user.getName() + "捡到了一张符卡：" + item.toFullName();
+    }
+
 
     @CommandMapping(value = {"打劫*","抢劫*"},menu = {"hd"},tili = -30)
     public Object dj(Message message,Long qq2){
@@ -87,7 +100,9 @@ public class HdService {
                     Item item;
                     if ((item = getNoUr(items)) != null){
                         Integer id = item.getId();
+                        UserItem userItem = userItemMapper.selectById(id);
                         userItemMapper.delete(new UpdateWrapper<UserItem>().eq("id",id));
+                        dumpMapper.insert(new Dump().setItemId(userItem.getItemId()));
                         card = "\n跑的匆忙，途中不慎遗失符卡：" + item.toFullName();
                     }
 
@@ -144,7 +159,7 @@ public class HdService {
         }
 
     }
-    private Item getNoUr(List<Item> items){
+    public static Item getNoUr(List<Item> items){
         if(items == null || items.isEmpty()){
             return null;
         }

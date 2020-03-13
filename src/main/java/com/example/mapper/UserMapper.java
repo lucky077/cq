@@ -38,7 +38,10 @@ public interface UserMapper extends BaseMapper<User> {
     @Update("update user set bank_overdue = bank_overdue + 1 where bank_money < 0")
     void changeBankOverdue();
 
-    @Select("select * from user where bank_overdue > 3")
+    @Update("update user set bank_score = bank_score + bank_money * 0.2 where bank_money > 0")
+    void changeBankScore();
+
+    @Select("select * from user where bank_overdue > 3 and bank_money < 0")
     List<User> getBankOverdue();
 
     @Select("select sum(bank_money) from user where bank_money > 20")
@@ -48,6 +51,8 @@ public interface UserMapper extends BaseMapper<User> {
     @Update("update user set bank_money = bank_money - bank_money/#{i}")
     void reduceBankMoney(Object i);
 
+    @Select("select qq , money ,bank_money from user where group_id = #{groupId} and qq > 9999 group by (money + bank_money) desc limit #{limit}")
+    List<User> selectListzs(@Param("groupId") Object groupId,@Param("limit") long limit);
 
     default User selectById0(Serializable id){
         User user = this.selectById(id);

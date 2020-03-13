@@ -1,13 +1,16 @@
 package com.example.config;
 
+import com.example.Demo;
 import com.example.Variable;
 import com.example.entity.Friend;
 import com.example.entity.User;
 import com.example.mapper.FriendMapper;
 import com.example.mapper.UserMapper;
+import com.example.service.BankService;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.Scheduled;
 
+import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import java.io.File;
 import java.util.Date;
@@ -20,6 +23,8 @@ public class ScheduConfig {
     private UserMapper userMapper;
     @Resource
     private FriendMapper friendMapper;
+    @Resource
+    private BankService bankService;
 
     @Scheduled(cron = "0 0 0 * * ?")
     public void guanxi(){
@@ -28,15 +33,21 @@ public class ScheduConfig {
         int i1 = friendMapper.guanxiUp(5, -59, -10);
         int i2 = friendMapper.guanxiUp(1, -9, -1);
         System.out.println(i + i1 + i2 + "个关系提升了");
+        Demo.sendGroupMsg(i + i1 + i2 + "个仇人间关系缓和了");
 
 
+        userMapper.changeBankScore();
+        Demo.sendGroupMsg("银行信用已更新");
         userMapper.changeBankMoney();
+        Demo.sendGroupMsg("银行利息已结算");
         userMapper.changeBankOverdue();
 
         List<User> overdueUserList = userMapper.getBankOverdue();
+        bankService.qingsuan(overdueUserList);
 
 
     }
+
     @Scheduled(cron = "0 0/30 * * * ?")
     public void tili(){
 
@@ -44,6 +55,7 @@ public class ScheduConfig {
         userMapper.changeTili();
         userMapper.changeTili2();
         System.out.println("体力恢复成功！"+new Date().toString());
+        Demo.sendGroupMsg("体力恢复成功！"+new Date().toString());
         List<File> deleteFiles = Variable.deleteFiles;
         int size = deleteFiles.size();
         int count = 0;
