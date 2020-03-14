@@ -127,7 +127,7 @@ public class BankService {
         return "成功存款" + tMoney + "到银行";
     }
     @CommandMapping(value = {"取款*","取钱*"},menu = {"yh"})
-    @Times(interval = 3600,limit = 2)
+    //@Times(interval = 3600,limit = 2)
     public Object qk(Message message,Long tMoney){
 
         if (tMoney < 1){
@@ -172,7 +172,7 @@ public class BankService {
     }
 
     @CommandMapping(value = {"还款*","还钱*"},menu = {"yh"})
-    @Times(interval = 3600,limit = 2)
+    //@Times(interval = 3600,limit = 2)
     public Object hk(Message message,Long tMoney){
 
         if (tMoney < 1){
@@ -268,7 +268,7 @@ public class BankService {
         boolean pk = pkService.pk(user, user2);
 
         double an = TypeValue.getOne(user.getTypeValues(), "暗").getSumLevel() * 2.0;
-        double you = TypeValue.getOne(user2.getTypeValues(), "幽").getSumLevel() * 2.0;
+
         String bankMoneyStr = redisTemplate.opsForValue().get("bankMoney");
         Integer bankMoney = 0;
         if (bankMoneyStr == null){
@@ -293,7 +293,7 @@ public class BankService {
             redisTemplate.opsForValue().set("bankMoney",bankMoney.toString());
             return "成功抢走了银行" + sum + "金币";
         }else {
-            if (trueOrFalse(65.0 + an - you)){
+            if (trueOrFalse(60.0 + an)){
                 String card = "";
                 if (trueOrFalse(50.0 - an * 1.5)){
                     List<Item> items = userItemMapper.selectList(user.getQq());
@@ -309,12 +309,13 @@ public class BankService {
                 return "什么都没捞到，但是侥幸逃跑了" + card;
             } else {
                 String key = "bankBan:" + user.getQq();
-                redisTemplate.opsForValue().set(key,"1",60, TimeUnit.MINUTES);
-                int i = randInt(100, 2000);
+                int min = randInt(30, 120);
+                redisTemplate.opsForValue().set(key,"1",min, TimeUnit.MINUTES);
+                int i = randInt(100,3000);
                 user.setMoney(user.getMoney() - i);
                 bankMoney = bankMoney + i;
                 redisTemplate.opsForValue().set("bankMoney",bankMoney.toString());
-                return "你打不过银行,被关进监狱60分钟,罚款" + i;
+                return "你打不过银行,被关进监狱" + min + "分钟,罚款" + i;
             }
         }
 
@@ -333,10 +334,17 @@ public class BankService {
 
 
         User user = message.getUser();
+        String bankMoneyStr = redisTemplate.opsForValue().get("bankMoney");
+        Integer bankMoney = 0;
+        if (bankMoneyStr == null){
+            redisTemplate.opsForValue().set("bankMoney","0");
+        }else {
+            bankMoney = Integer.valueOf(bankMoneyStr);
+        }
         User user2 = new User().setQq(-1L);
 
         boolean pk = pkService.pk(user, user2);
-
+        double an = TypeValue.getOne(user.getTypeValues(), "暗").getSumLevel() * 2.0;
         if (pk){
 
             for (String key : keys) {
@@ -346,10 +354,22 @@ public class BankService {
                 user.setHonor(user.getHonor());
                 friendMapper.setVal(qq,user.getQq(),12);
             }
-            return "你拯救了" + keys.size() + "人，你们的关系提升了，你获得荣誉";
+            redisTemplate.delete("times:jlj:" + user.getQq().toString());
+            return "你拯救了" + keys.size() + "人，你们的关系提升了，你获得荣誉\n你的捡垃圾CD被重置";
 
         }else {
-            return "劫狱失败";
+            if (trueOrFalse(60 + an)){
+                return "劫狱失败";
+            }else {
+                String key = "bankBan:" + user.getQq();
+                int min = randInt(30, 120);
+                redisTemplate.opsForValue().set(key,"1",min, TimeUnit.MINUTES);
+                int i = randInt(100,3000);
+                user.setMoney(user.getMoney() - i);
+                bankMoney = bankMoney + i;
+                redisTemplate.opsForValue().set("bankMoney",bankMoney.toString());
+                return "劫狱失败,你被关进监狱" + min + "分钟,罚款" + i;
+            }
         }
 
     }
