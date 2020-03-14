@@ -3,10 +3,12 @@ package com.example.config;
 import com.example.Demo;
 import com.example.Variable;
 import com.example.entity.Friend;
+import com.example.entity.Item;
 import com.example.entity.User;
 import com.example.mapper.FriendMapper;
 import com.example.mapper.UserMapper;
 import com.example.service.BankService;
+import com.example.service.ItemService;
 import com.example.util.LuckUtil;
 import com.example.util.MyUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,6 +35,8 @@ public class ScheduConfig {
     private FriendMapper friendMapper;
     @Resource
     private BankService bankService;
+    @Resource
+    private ItemService itemService;
 
     @Autowired
     private StringRedisTemplate stringRedisTemplate;
@@ -52,6 +56,7 @@ public class ScheduConfig {
 
         if (timeStr == null){
             bank0();
+            itemService.flushShop();
             MyUtil.async(this::bank);
         }
 
@@ -68,6 +73,7 @@ public class ScheduConfig {
 
         if (timeStr == null){
             time = new Date().getTime() + LuckUtil.randInt(2,14) * 3600 * 1000L;
+            stringRedisTemplate.opsForValue().set(key,time.toString());
         }else {
             time = Long.valueOf(time);
         }
@@ -76,10 +82,11 @@ public class ScheduConfig {
             @Override
             public void run() {
                 bank0();
+                itemService.flushShop();
+                stringRedisTemplate.opsForValue().set(key,new Date().getTime() + LuckUtil.randInt(16,32) * 3600 * 1000L + "");
                 bank();
             }
         },time);
-        stringRedisTemplate.opsForValue().set(key,time + LuckUtil.randInt(16,32) * 3600 * 1000L + "");
     }
 
     private void bank0(){

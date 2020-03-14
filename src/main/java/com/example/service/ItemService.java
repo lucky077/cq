@@ -5,15 +5,22 @@ import com.example.Demo;
 import com.example.annotation.CommandMapping;
 import com.example.annotation.Times;
 import com.example.entity.Item;
+import com.example.entity.Shop;
 import com.example.entity.User;
 import com.example.entity.UserItem;
 import com.example.mapper.*;
 import com.example.model.Goods;
 import com.example.model.Message;
+import com.example.util.FtlUtil;
 import com.example.util.LuckUtil;
 import com.example.util.MyUtil;
 import com.sobte.cqp.jcq.entity.Member;
 import lombok.Data;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
+import org.springframework.data.redis.connection.RedisConnection;
+import org.springframework.data.redis.core.RedisCallback;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -48,6 +55,9 @@ public class ItemService {
     @Resource
     private DumpMapper dumpMapper;
 
+    @Autowired
+    private StringRedisTemplate redisTemplate;
+
 
 
     @CommandMapping(value = {"符卡"},menu = {"cd"},order = 1)
@@ -69,6 +79,9 @@ public class ItemService {
             return -1;
         }
 
+        if (user.getBankOverdue() > 1){
+            return  "您的符卡已被银行冻结";
+        }
 
 
         int result = userItemMapper.delete(new QueryWrapper<UserItem>()
@@ -93,6 +106,10 @@ public class ItemService {
     public Object xj(Message message,String itemName){
 
         User user = message.getUser();
+
+        if (user.getBankOverdue() > 1){
+            return  "您的符卡已被银行冻结";
+        }
 
         int value = userItemMapper.selectMyValue(user.getQq());
 
@@ -120,10 +137,8 @@ public class ItemService {
 
         user.setMoney(user.getMoney() - value);
 
-        user.setHonor(user.getHonor() - item.getLevelNum() * 1);
-
-        sendGroupMsg(MessageFormat.format("{0}消耗{1}金币献祭了{2}【{3}】！\n你失去荣誉",
-                user.getName(),value,item.getName(),item.getLevel()));
+        sendGroupMsg(MessageFormat.format("{0}消耗{1}金币献祭了{2}！",
+                user.getName(),value,item.toFullName()));
 
 
 
@@ -188,6 +203,11 @@ public class ItemService {
     public Object jbzx(Message message){
 
         User user = message.getUser();
+
+        if (user.getBankOverdue() > 1){
+            return  "您的金币已被银行冻结";
+        }
+
         Integer sumCount = itemMapper.selectCount(new QueryWrapper<Item>()
                 .eq("qq", user.getQq())
         );
@@ -240,6 +260,10 @@ public class ItemService {
                     money += randInt(200,500);
                 }
                 money += randInt(1,30);
+            }else if(from == 1 && trueOrFalse(1)){
+                money += 30000;
+            }else if(from == 0 && trueOrFalse(0.5)){
+                money += 30000;
             }
         }
 
@@ -321,10 +345,11 @@ public class ItemService {
     }
 
     //@PostConstruct
-    public void qqq(){
+    public void createDefault(){
         String[] names = {"御坂美琴","时崎狂三","白井黑子","无极剑圣","一方通行","梦梦","娜娜","伊莉雅","狂热者","探机"
                 ,"泽拉图","凯瑞甘","阿塔尼斯","鸢一折纸","四糸乃","四糸奈","五河琴里","夜刀神十香","上条当麻","亚丝娜","末日使者"
-                ,"萌王","蕾姆"};
+                ,"萌王","蕾姆","初音未来","栗山未来","喜羊羊","五更琉璃","珂朵莉","西行寺幽幽子","芙兰朵露","蕾米莉亚","贞德"
+                ,"金色之暗","伊卡洛斯","十六夜咲夜","楪祈","博丽灵梦"};
 
 
         for (String name : names) {
@@ -405,6 +430,10 @@ public class ItemService {
 
         User user = message.getUser();
 
+        if (user.getBankOverdue() > 2){
+            return  "您的符卡已被银行冻结";
+        }
+
         synchronized (lock){
 
             if (currentGoods != null){
@@ -466,6 +495,13 @@ public class ItemService {
                 return;
             }
 
+            UserItem check = userItemMapper.selectById(userItem.getId());
+            if (check == null || !check.getQq().equals(userItem.getQq())){
+                sendGroupMsg(itemName + "交易失败！~");
+                currentGoods = null;
+                lock = false;
+            }
+
             userMapper.changeMoney(price,userItem.getQq());
             userMapper.changeMoney(-price,lastQQ);
 
@@ -484,12 +520,70 @@ public class ItemService {
 
         return -1;
     }
+    @Resource
+    private ShopMapper shopMapper;
+
+    public void flushShop(){
+        List<Item> items = itemMapper.selectList(new QueryWrapper<Item>().orderByAsc("rand()").last("limit 10"));
+        shopMapper.delete(null);
+        int number = 1;
+        for (Item item : items) {
+            int i = randInt(8, 18);
+            String type = item.getType();
+            if ("暗".equals(type) || "幽".equals(type)){
+                i *= 2;
+            }
+            shopMapper.insert(new Shop().setPrice(item.getValue() * i).setItemId(item.getId()).setItemName(item.toFullName()).setNumber(number));
+            number++;
+        }
+        sendGroupMsg(FtlUtil.render("sd",sd(null)));
+        sendGroupMsg("商店已刷新");
+    }
+
+    @CommandMapping(value = "商店",menu = "fk")
+    public Object sd(Message message){
+
+        List<Shop> shops = shopMapper.selectList(new QueryWrapper<Shop>().orderByDesc("price"));
+
+        Map map = new HashMap();
+        map.put("list",shops);
+        return map;
+    }
+
+    @CommandMapping(value = "购买*",menu = "fk")
+    public synchronized Object gm(Message message,Integer number){
+
+        User user = message.getUser();
+
+        if (user.getBankOverdue() > 1){
+            return  "您的金币已被银行冻结";
+        }
+
+        Shop shop = shopMapper.selectOne(new QueryWrapper<Shop>().eq("number", number));
+        if (shop == null){
+            return "购买失败";
+        }
+
+        if (user.getMoney() < shop.getPrice()){
+            return "余额不足";
+        }
+
+        shopMapper.deleteById(shop.getId());
+
+        userItemMapper.insert(new UserItem().setItemName(shop.getItemName()).setItemId(shop.getItemId()).setQq(user.getQq()));
+        user.setMoney(user.getMoney() - shop.getPrice());
+
+        return user.getName() + "花费" + shop.getPrice() + "金币购买了" + shop.getItemName();
+    }
 
     @CommandMapping(value = "出价*")
     public Object cj(Message message,Long value){
 
         User user = message.getUser();
 
+        if (user.getBankOverdue() > 1){
+            return  "您的金币已被银行冻结";
+        }
 
         if (value == null){
             return -1;
@@ -520,6 +614,14 @@ public class ItemService {
                 if (now.minusSeconds(10).isBefore(currentGoods.getLastTime())){
                     return "十秒内不能连续出价";
                 }else {
+
+                    UserItem check = userItemMapper.selectById(userItem.getId());
+                    if (check == null || !check.getQq().equals(userItem.getQq())){
+                        sendGroupMsg(userItem.getItemName() + "交易失败！~");
+                        currentGoods = null;
+                        return -1;
+                    }
+
                     userMapper.changeMoney(value,userItem.getQq());
                     userMapper.changeMoney(-value,user.getQq());
 
@@ -561,6 +663,27 @@ public class ItemService {
         userItemMapper.delete(null);
         itemMapper.delete(null);
         dumpMapper.delete(null);
+        createDefault();
+
+        List<Item> itemList = itemMapper.getMaxValueGroupType();
+
+        if (itemList.size() == 5){
+            for (Item item : itemList) {
+                userItemMapper.insert(new UserItem().setQq(-1L).setItemId(item.getId()).setItemName(item.toFullName()));
+            }
+        }else {
+            for (Item item : itemList) {
+                userItemMapper.insert(new UserItem().setQq(-1L).setItemId(item.getId()).setItemName(item.toFullName()));
+                userItemMapper.insert(new UserItem().setQq(-1L).setItemId(item.getId()).setItemName(item.toFullName()));
+            }
+        }
+
+        redisTemplate.execute(new RedisCallback() {
+            public String doInRedis(RedisConnection connection) throws DataAccessException {
+                connection.flushDb();
+                return "ok";
+            }
+        });
 
 
         return "符卡数据已经全部清空，之前拥有符卡已经兑换成金币";

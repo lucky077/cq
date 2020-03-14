@@ -116,6 +116,9 @@ public class HdService {
             }
 
             long add = user2.getMoney() / randInt(6,15) + 1;
+            if (add < 0){
+                add = 0;
+            }
             user.setMoney(add + user.getMoney());
             user.setHonor(user.getHonor() - 1);
             user2.setMoney(user2.getMoney() - add);
@@ -282,6 +285,11 @@ public class HdService {
         if (user1.getMoney() < num || num < 1){
              return  "余额不足！";
         }
+
+        if (user1.getBankOverdue() > 1){
+            return  "您的金币已被银行冻结";
+        }
+
         Member qq1Info = getGroupMemberInfo(fromQQ);
         Member qq2Info = getGroupMemberInfo(qq2);
         if (qq2Info == null){

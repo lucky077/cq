@@ -57,7 +57,7 @@ public class CommandService {
         return cd;
     }
     @CommandMapping(value = {"赌博*"},menu = {"hd"})
-    @Times(limit = 5,tip = "每天只能赌5次噢")
+    @Times(interval = 3600,limit = 2,tip = "每小时只能赌2次噢")
     public Object db(Message message,Integer limit){
         User user = message.getUser();
 
@@ -69,12 +69,25 @@ public class CommandService {
             sendGroupMsg("你赌不起这么大的,找别人借点钱再赌吧喵~");
             return -1;
         }
-        Double luck = 50.0;
-        double offset = ((luck - 50.0)) / 100;
-        offset = 2 * offset;
 
-        int add = LuckUtil.randInt(-limit, (int)(limit * (1 + offset)));
-        if (add == 0) add = limit * 12;
+        if (user.getBankOverdue() > 1){
+            return  "您的金币已被银行冻结";
+        }
+        int add = 0;
+        int i = randInt(1, 100);
+
+        if (i < 60){
+            add = randInt(-limit,0);
+        }else if (i > 85){
+            add = randInt(limit,limit * 3);
+        }else {
+            add = randInt(0,limit);
+        }
+
+
+
+
+        if (add == 0) add = limit;
         user.setMoney(add + user.getMoney());
         if (add > 0){
             return "你赢得" + add + "金币！";

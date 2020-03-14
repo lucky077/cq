@@ -93,7 +93,7 @@ public class BankService {
             value = 0;
         }
 
-        value += Integer.parseInt(String.valueOf(user.getMoney())) * 3;
+        value += Integer.parseInt(String.valueOf(user.getMoney())) * 4;
 
         user.setBankScore(value);
 
@@ -382,6 +382,11 @@ public class BankService {
                 userItemMapper.updateById(new UserItem().setId(item.getId()).setQq(-1L));
                 bankMoney += value;
                 sendGroupMsg(name + "的符卡："+ item.toFullName() +"已经被银行清算");
+            }
+
+            if (bankMoney < 0 && user.getBankItem() != 0){
+                user.setBankItem(0);
+                sendGroupMsg(name + "派遣至银行的符卡已被清算");
             }
 
             if (bankMoney < 0){
