@@ -5,7 +5,9 @@ package com.example.service;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.example.Demo;
 import com.example.annotation.CommandMapping;
+import com.example.annotation.Normal;
 import com.example.annotation.Times;
+import com.example.aop.TestAspectJ;
 import com.example.entity.User;
 import com.example.mapper.UserMapper;
 import com.example.model.Message;
@@ -126,6 +128,7 @@ public class CommandService {
 
     @CommandMapping(value = {"随机老婆*"},menu = {"cd"})
     @Times(limit = 3,interval = 180)
+    @Normal
     public Object sjlp(Message message,Integer start,Integer limit){
         if (start == null || start < 1 ||start > this.limit){
             start = 1;
@@ -152,6 +155,7 @@ public class CommandService {
 
     @CommandMapping(value = {"百科*"},menu = {"cd"})
     @Times(limit = 3,interval = 180)
+    @Normal
     public Object bk(Message message,String word){
         if (StringUtils.isEmpty(word)){
             word = "百度百科";
@@ -183,6 +187,7 @@ public class CommandService {
     }
 
     @CommandMapping(value = {"签到"},notes = "免费抽奖一次",menu = {"cd"})
+    @Normal
     public Object qd(Message message){
         Long fromQQ = message.getFromQQ();
         User user = message.getUser();
@@ -238,6 +243,20 @@ public class CommandService {
         return "抽奖得到" + add +"金币！";
     }
 
+    @CommandMapping(value = {"机器人*"})
+    @Normal
+    public Object jqr(Message message,String cmd){
+       if (!message.getUser().getQq().equals(471129493L)){
+           return -1;
+       }
+       if ("开启".equals(cmd)){
+           TestAspectJ.isRun = true;
+       }else if ("关闭".equals(cmd)){
+           TestAspectJ.isRun = false;
+       }
+
+        return "ok";
+    }
 
 
 }

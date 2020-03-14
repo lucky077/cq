@@ -56,7 +56,7 @@ public class Demo extends JcqAppAbstract implements ICQVer, IMsg, IRequest {
         String at1 = CC.at(471129491);
 
         //demo.groupMsg(0, 10008, 492155062l, 50L, "", "金币占星", 0);
-        demo.groupMsg(0, 10008, 492155062l, 0L, "", "捡垃圾", 0);
+        demo.groupMsg(0, 10008, 492155062l, 0L, "", "打劫银行", 0);
 
 
     }

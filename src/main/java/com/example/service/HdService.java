@@ -52,7 +52,12 @@ public class HdService {
     public Object jlj(Message message){
         User user = message.getUser();
         List<Dump> dumps = dumpMapper.selectList(null);
-        if (dumps.isEmpty() || trueOrFalse(50)){
+        if (dumps.isEmpty()){
+            return "什么都没捡到";
+        }
+        List<TypeValue> typeValues = userItemMapper.selectTypeValue(user.getQq());
+        double you = TypeValue.getOne(typeValues, "幽").getSumLevel() * 2.0;
+        if (trueOrFalse(50 + you)){
             return "什么都没捡到";
         }
         Collections.shuffle(dumps);

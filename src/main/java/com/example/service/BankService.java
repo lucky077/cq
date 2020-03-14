@@ -4,6 +4,7 @@ package com.example.service;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.example.annotation.CommandMapping;
+import com.example.annotation.Times;
 import com.example.entity.*;
 import com.example.mapper.*;
 import com.example.model.Message;
@@ -100,6 +101,7 @@ public class BankService {
     }
 
     @CommandMapping(value = {"存款*","存钱*"},menu = {"yh"})
+    @Times(interval = 3600,limit = 2)
     public Object ck(Message message,Long tMoney){
 
         if (tMoney < 1){
@@ -125,6 +127,7 @@ public class BankService {
         return "成功存款" + tMoney + "到银行";
     }
     @CommandMapping(value = {"取款*","取钱*"},menu = {"yh"})
+    @Times(interval = 3600,limit = 2)
     public Object qk(Message message,Long tMoney){
 
         if (tMoney < 1){
@@ -146,6 +149,7 @@ public class BankService {
         return "成功从银行取款" + tMoney;
     }
     @CommandMapping(value = {"贷款*","借钱*"},menu = {"yh"})
+    @Times(interval = 3600,limit = 2)
     public Object dk(Message message,Long tMoney){
 
         if (tMoney < 1){
@@ -168,6 +172,7 @@ public class BankService {
     }
 
     @CommandMapping(value = {"还款*","还钱*"},menu = {"yh"})
+    @Times(interval = 3600,limit = 2)
     public Object hk(Message message,Long tMoney){
 
         if (tMoney < 1){
@@ -264,12 +269,18 @@ public class BankService {
 
         double an = TypeValue.getOne(user.getTypeValues(), "暗").getSumLevel() * 2.0;
         double you = TypeValue.getOne(user2.getTypeValues(), "幽").getSumLevel() * 2.0;
-
+        String bankMoneyStr = redisTemplate.opsForValue().get("bankMoney");
+        Integer bankMoney = 0;
+        if (bankMoneyStr == null){
+            redisTemplate.opsForValue().set("bankMoney","0");
+        }else {
+            bankMoney = Integer.valueOf(bankMoneyStr);
+        }
         if (pk){
             long sum = 0;
             int i = randInt(7, 11) + 1;
 
-            sum += 50000 / i;
+            sum += (60000 + bankMoney) / i;
 
             userMapper.reduceBankMoney(i);
             Long sumBankMoney = userMapper.getSumBankMoney();
@@ -278,9 +289,11 @@ public class BankService {
             }
             user.setMoney(user.getMoney() + sum);
             user.setHonor(user.getHonor() - 1);
+            bankMoney = bankMoney - bankMoney / i;
+            redisTemplate.opsForValue().set("bankMoney",bankMoney.toString());
             return "成功抢走了银行" + sum + "金币";
         }else {
-            if (trueOrFalse(70.0 + an - you)){
+            if (trueOrFalse(65.0 + an - you)){
                 String card = "";
                 if (trueOrFalse(50.0 - an * 1.5)){
                     List<Item> items = userItemMapper.selectList(user.getQq());
@@ -297,7 +310,11 @@ public class BankService {
             } else {
                 String key = "bankBan:" + user.getQq();
                 redisTemplate.opsForValue().set(key,"1",60, TimeUnit.MINUTES);
-                return "你打不过银行,被关进监狱60分钟";
+                int i = randInt(100, 2000);
+                user.setMoney(user.getMoney() - i);
+                bankMoney = bankMoney + i;
+                redisTemplate.opsForValue().set("bankMoney",bankMoney.toString());
+                return "你打不过银行,被关进监狱60分钟,罚款" + i;
             }
         }
 

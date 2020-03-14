@@ -7,14 +7,22 @@ import com.example.entity.User;
 import com.example.mapper.FriendMapper;
 import com.example.mapper.UserMapper;
 import com.example.service.BankService;
+import com.example.util.LuckUtil;
+import com.example.util.MyUtil;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.web.bind.annotation.PostMapping;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import java.io.File;
 import java.util.Date;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.ThreadLocalRandom;
 
 @Configuration
 public class ScheduConfig {
@@ -26,6 +34,9 @@ public class ScheduConfig {
     @Resource
     private BankService bankService;
 
+    @Autowired
+    private StringRedisTemplate stringRedisTemplate;
+
     @Scheduled(cron = "0 0 0 * * ?")
     public void guanxi(){
 
@@ -35,7 +46,43 @@ public class ScheduConfig {
         System.out.println(i + i1 + i2 + "个关系提升了");
         Demo.sendGroupMsg(i + i1 + i2 + "个仇人间关系缓和了");
 
+        String key = "bankTime";
 
+        String timeStr = stringRedisTemplate.opsForValue().get(key);
+
+        if (timeStr == null){
+            bank0();
+            MyUtil.async(this::bank);
+        }
+
+
+    }
+
+
+    public void bank(){
+        String key = "bankTime";
+
+        String timeStr = stringRedisTemplate.opsForValue().get(key);
+
+        Long time = null;
+
+        if (timeStr == null){
+            time = new Date().getTime() + LuckUtil.randInt(2,14) * 3600 * 1000L;
+        }else {
+            time = Long.valueOf(time);
+        }
+        Timer timer = new Timer();
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                bank0();
+                bank();
+            }
+        },time);
+        stringRedisTemplate.opsForValue().set(key,time + LuckUtil.randInt(16,32) * 3600 * 1000L + "");
+    }
+
+    private void bank0(){
         userMapper.changeBankScore();
         Demo.sendGroupMsg("银行信用已更新");
         userMapper.changeBankMoney();
@@ -44,8 +91,6 @@ public class ScheduConfig {
 
         List<User> overdueUserList = userMapper.getBankOverdue();
         bankService.qingsuan(overdueUserList);
-
-
     }
 
     @Scheduled(cron = "0 0/30 * * * ?")

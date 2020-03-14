@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.example.Demo;
 import com.example.annotation.CommandMapping;
+import com.example.annotation.Normal;
 import com.example.annotation.Times;
 import com.example.entity.User;
 import com.example.mapper.UserMapper;
@@ -50,13 +51,24 @@ public class TestAspectJ {
     @Resource
     private StringRedisTemplate stringRedisTemplate;
 
+    public static boolean isRun = true;
+
 
 
     @Around(value = "@annotation(com.example.annotation.CommandMapping)")
     public Object user(ProceedingJoinPoint point) throws Throwable {
 
+
         Object[] args = point.getArgs();
         Method method = ((MethodSignature) point.getSignature()).getMethod();
+
+        if (!isRun){
+            Normal normal = method.getAnnotation(Normal.class);
+            if (normal == null){
+                return null;
+            }
+        }
+
         CommandMapping commandMapping = method.getAnnotation(CommandMapping.class);
         Times times = method.getAnnotation(Times.class);
         Message message = (Message)args[0];;

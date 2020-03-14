@@ -88,18 +88,11 @@ public class ItemService {
                 user.getName(),MyUtil.getCardName(getGroupMemberInfo(qq2)),item.toFullName());
     }
 
-    @CommandMapping(value = {"献祭*"},menu = {"fk"},tili = -50,notes = "献祭符卡进行占星，消耗50体力和一定金币")
+    @CommandMapping(value = {"献祭*"},menu = {"fk"},notes = "献祭符卡进行占星，消耗一定金币")
     @Transactional
     public Object xj(Message message,String itemName){
 
         User user = message.getUser();
-
-        Item item = itemMapper.selectOne(new QueryWrapper<Item>().eq("name", itemName));
-
-        if (item == null){
-            sendGroupMsg("符卡不存在");
-            return -1;
-        }
 
         int value = userItemMapper.selectMyValue(user.getQq());
 
@@ -107,6 +100,13 @@ public class ItemService {
 
         if (value > user.getMoney()){
             sendGroupMsg("你需要" + value + "金币才能进行献祭");
+            return -1;
+        }
+
+        Item item = itemMapper.selectOne(new QueryWrapper<Item>().eq("name", itemName));
+
+        if (item == null){
+            sendGroupMsg("符卡不存在");
             return -1;
         }
 
@@ -615,7 +615,7 @@ public class ItemService {
     }
 
     private static boolean isNotName(String name){
-        return (name.contains("[CQ")|| name.length() > 32) || name.contains("【") || name.contains("】");
+        return (name.contains("[CQ")|| name.length() > 32) || name.contains("【") || name.contains("】" )|| name.contains("[")||name.contains("]");
     }
 
 
