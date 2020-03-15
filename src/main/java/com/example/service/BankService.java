@@ -312,7 +312,7 @@ public class BankService {
                 int min = randInt(30, 120);
                 redisTemplate.opsForValue().set(key,"1",min, TimeUnit.MINUTES);
                 int i = randInt(100,3000);
-                user.setMoney(user.getMoney() - i);
+                user.setBankMoney(user.getBankMoney() - i);
                 bankMoney = bankMoney + i;
                 redisTemplate.opsForValue().set("bankMoney",bankMoney.toString());
                 return "你打不过银行,被关进监狱" + min + "分钟,罚款" + i;
@@ -365,7 +365,7 @@ public class BankService {
                 int min = randInt(30, 120);
                 redisTemplate.opsForValue().set(key,"1",min, TimeUnit.MINUTES);
                 int i = randInt(100,3000);
-                user.setMoney(user.getMoney() - i);
+                user.setBankMoney(user.getBankMoney() - i);
                 bankMoney = bankMoney + i;
                 redisTemplate.opsForValue().set("bankMoney",bankMoney.toString());
                 return "劫狱失败,你被关进监狱" + min + "分钟,罚款" + i;

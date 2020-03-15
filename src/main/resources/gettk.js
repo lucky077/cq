@@ -21,3 +21,4 @@ var tk =  function (a,TKK) {
 	a %= 1E6;
 	return a.toString() + "." + (a ^ h)
 }
+

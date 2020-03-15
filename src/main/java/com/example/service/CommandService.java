@@ -74,12 +74,11 @@ public class CommandService {
             return  "您的金币已被银行冻结";
         }
         int add = 0;
-        int i = randInt(1, 100);
 
-        if (i < 60){
+        if (trueOrFalse(60)){
             add = randInt(-limit,0);
-        }else if (i > 85){
-            add = randInt(limit,limit * 3);
+        }else if (trueOrFalse(40)){
+            add = randInt(limit,limit * 4);
         }else {
             add = randInt(0,limit);
         }

@@ -3,8 +3,10 @@ package com.example.service;
 import com.example.Demo;
 import com.example.Variable;
 import com.example.annotation.CommandMapping;
+import com.example.config.ScheduConfig;
 import com.example.model.Message;
 import com.example.pojo.MethodInvoker;
+import com.example.util.MyUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.annotation.AnnotationUtils;
@@ -24,6 +26,8 @@ public class InitService {
     @Autowired
     private ApplicationContext applicationContext;
 
+    @Autowired
+    private ScheduConfig scheduConfig;
 
 
     @PostConstruct
@@ -35,6 +39,12 @@ public class InitService {
         allowedGroup.add(86266257l);
 
         initCommandMapping();
+
+        MyUtil.async(() -> {
+            MyUtil.sleep(5000);
+            System.out.println("读取银行商店更新时间");
+            scheduConfig.bank();
+        });
 
     }
     @PreDestroy

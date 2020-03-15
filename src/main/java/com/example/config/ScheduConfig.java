@@ -60,33 +60,33 @@ public class ScheduConfig {
             MyUtil.async(this::bank);
         }
 
-
     }
 
-
     public void bank(){
-        String key = "bankTime";
 
-        String timeStr = stringRedisTemplate.opsForValue().get(key);
+          MyUtil.sleep(5000L);
+          String key = "bankTime";
 
-        Long time = null;
+          String timeStr = stringRedisTemplate.opsForValue().get(key);
 
-        if (timeStr == null){
-            time = new Date().getTime() + LuckUtil.randInt(2,14) * 3600 * 1000L;
-            stringRedisTemplate.opsForValue().set(key,time.toString());
-        }else {
-            time = Long.valueOf(time);
-        }
-        Timer timer = new Timer();
-        timer.schedule(new TimerTask() {
-            @Override
-            public void run() {
-                bank0();
-                itemService.flushShop();
-                stringRedisTemplate.opsForValue().set(key,new Date().getTime() + LuckUtil.randInt(16,32) * 3600 * 1000L + "");
-                bank();
-            }
-        },time);
+          Long time;
+
+          if (timeStr == null){
+              time = new Date().getTime() + LuckUtil.randInt(2,14) * 3600 * 1000L;
+              stringRedisTemplate.opsForValue().set(key,time.toString());
+          }else {
+              time = Long.valueOf(timeStr);
+          }
+          Timer timer = new Timer();
+          timer.schedule(new TimerTask() {
+              @Override
+              public void run() {
+                  bank0();
+                  itemService.flushShop();
+                  stringRedisTemplate.opsForValue().set(key,new Date().getTime() + LuckUtil.randInt(16,32) * 3600 * 1000L + "");
+                  bank();
+              }
+          },new Date(time));
     }
 
     private void bank0(){

@@ -61,12 +61,10 @@ public class TestAspectJ {
 
         Object[] args = point.getArgs();
         Method method = ((MethodSignature) point.getSignature()).getMethod();
+        Normal normal = method.getAnnotation(Normal.class);
 
-        if (!isRun){
-            Normal normal = method.getAnnotation(Normal.class);
-            if (normal == null){
-                return null;
-            }
+        if (!isRun && normal == null){
+            return null;
         }
 
         CommandMapping commandMapping = method.getAnnotation(CommandMapping.class);
@@ -76,7 +74,7 @@ public class TestAspectJ {
 
         String bankBanKey = "bankBan:"+fromQQ;
         String bankBan = stringRedisTemplate.opsForValue().get(bankBanKey);
-        if (bankBan != null){
+        if (bankBan != null && normal == null){
             Long expire = stringRedisTemplate.opsForValue().getOperations().getExpire(bankBanKey);
             sendGroupMsg("还有" + (int)(Math.ceil(expire / 60.0)) + "分钟可以从监狱释放");
             return null;
