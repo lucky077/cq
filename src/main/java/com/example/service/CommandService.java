@@ -77,7 +77,7 @@ public class CommandService {
 
         if (trueOrFalse(60)){
             add = randInt(-limit,0);
-        }else if (trueOrFalse(40)){
+        }else if (trueOrFalse(38)){
             add = randInt(limit,limit * 4);
         }else {
             add = randInt(0,limit);

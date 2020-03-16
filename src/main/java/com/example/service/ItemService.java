@@ -260,9 +260,9 @@ public class ItemService {
                     money += randInt(200,500);
                 }
                 money += randInt(1,30);
-            }else if(from == 1 && trueOrFalse(1)){
+            }else if(from == 1 && trueOrFalse(0.8)){
                 money += 30000;
-            }else if(from == 0 && trueOrFalse(0.5)){
+            }else if(from == 0 && trueOrFalse(0.4)){
                 money += 30000;
             }
         }
