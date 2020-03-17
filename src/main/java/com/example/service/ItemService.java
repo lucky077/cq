@@ -349,7 +349,7 @@ public class ItemService {
         String[] names = {"御坂美琴","时崎狂三","白井黑子","无极剑圣","一方通行","梦梦","娜娜","伊莉雅","狂热者","探机"
                 ,"泽拉图","凯瑞甘","阿塔尼斯","鸢一折纸","四糸乃","四糸奈","五河琴里","夜刀神十香","上条当麻","亚丝娜","末日使者"
                 ,"萌王","蕾姆","初音未来","栗山未来","喜羊羊","五更琉璃","珂朵莉","西行寺幽幽子","芙兰朵露","蕾米莉亚","贞德"
-                ,"金色之暗","伊卡洛斯","十六夜咲夜","楪祈","博丽灵梦"};
+                ,"金色之暗","伊卡洛斯","十六夜咲夜","楪祈","博丽灵梦","傻白甜"};
 
 
         for (String name : names) {
@@ -654,16 +654,20 @@ public class ItemService {
 
         List<Item> items = userItemMapper.selectAllValue();
 
+        userMapper.resetBank();
+
         items.forEach(item -> {
 
-            userMapper.changeMoney(item.getValue() * 2L,item.getQq());
+            userMapper.changeMoney(item.getValue() * 1L,item.getQq());
 
         });
 
         userItemMapper.delete(null);
         itemMapper.delete(null);
         dumpMapper.delete(null);
+        shopMapper.delete(null);
         createDefault();
+
 
         List<Item> itemList = itemMapper.getMaxValueGroupType();
 

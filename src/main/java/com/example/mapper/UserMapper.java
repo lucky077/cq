@@ -23,6 +23,9 @@ public interface UserMapper extends BaseMapper<User> {
     @Update("update user set money = money + #{money} where qq = #{qq}")
     void changeMoney(@Param("money") Long money,@Param("qq") Long qq);
 
+    @Update("update user set money = money + bank_money,bank_money = 0,bank_item = 0,bank_overdue = 0")
+    void resetBank();
+
     @Update("update user set tili = tili + 10 where tili < 100")
     void changeTili();
     @Update("update user set tili = 100 where tili > 100")
