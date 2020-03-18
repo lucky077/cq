@@ -12,6 +12,9 @@ import java.util.Map;
 public interface UserItemMapper extends BaseMapper<UserItem> {
 
 
+    @Select("select ui.id,i.name,i.value,i.level,i.`type`,count(i.id) count from useritem ui,item i where i.id = ui.item_id and ui.qq = #{qq} group by i.id order by i.value desc")
+    List<Map> selectListByCount(Object qq);
+
     @Select("select ui.id,i.name,i.value,i.level,i.`type` from useritem ui,item i where i.id = ui.item_id and ui.qq = #{qq} order by i.value desc")
     List<Item> selectList(Object qq);
 

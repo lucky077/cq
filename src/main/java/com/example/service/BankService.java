@@ -309,7 +309,11 @@ public class BankService {
                 return "什么都没捞到，但是侥幸逃跑了" + card;
             } else {
                 String key = "bankBan:" + user.getQq();
-                int min = randInt(30, 120);
+                int add = 0;
+                if (user.getHonor() < 0){
+                    add = add - user.getHonor();
+                }
+                int min = randInt(30, 120 + add);
                 redisTemplate.opsForValue().set(key,"1",min, TimeUnit.MINUTES);
                 int i = randInt(100,3000);
                 user.setBankMoney(user.getBankMoney() - i);
@@ -362,7 +366,13 @@ public class BankService {
                 return "劫狱失败";
             }else {
                 String key = "bankBan:" + user.getQq();
-                int min = randInt(30, 120);
+
+                int add = 0;
+                if (user.getHonor() < 0){
+                    add = add - user.getHonor();
+                }
+
+                int min = randInt(30, 120 + add);
                 redisTemplate.opsForValue().set(key,"1",min, TimeUnit.MINUTES);
                 int i = randInt(100,3000);
                 user.setBankMoney(user.getBankMoney() - i);

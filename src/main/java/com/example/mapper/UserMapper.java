@@ -51,7 +51,7 @@ public interface UserMapper extends BaseMapper<User> {
     Long getSumBankMoney();
 
 
-    @Update("update user set bank_money = bank_money - bank_money/#{i}")
+    @Update("update user set bank_money = bank_money - bank_money/#{i} where bank_money > 20")
     void reduceBankMoney(Object i);
 
     @Select("select qq , money ,bank_money from user where group_id = #{groupId} and qq > 9999 group by (money + bank_money) desc limit #{limit}")

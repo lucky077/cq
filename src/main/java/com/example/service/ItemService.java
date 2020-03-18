@@ -159,6 +159,7 @@ public class ItemService {
 
         List<Item> list = itemMapper.selectList(new QueryWrapper<Item>().eq(condition,"type",type).orderByDesc("value").last("limit 30"));
 
+
         Map map = new HashMap();
         map.put("list",list);
         return map;
@@ -199,8 +200,12 @@ public class ItemService {
         return "修改成功";
     }
 
-    @CommandMapping(value = {"金币占星"},menu = {"fk"},notes = "5888金币抽符卡（保底一张卡）")
-    public Object jbzx(Message message){
+    @CommandMapping(value = {"金币占星*"},menu = {"fk"},notes = "5888金币抽符卡（保底一张卡）")
+    public Object jbzx(Message message,Integer count){
+        if (count == null || count < 1){
+            count = 1;
+        }
+
 
         User user = message.getUser();
 
@@ -217,13 +222,13 @@ public class ItemService {
             return -1;
         }
 
-        if (user.getMoney() < 5888){
-            sendGroupMsg("需要5888金币！");
+        if (user.getMoney() < 5888 * count){
+            sendGroupMsg("需要"+(5888 * count)+"金币！");
             return -1;
         }
 
-        user.setMoney(user.getMoney() - 5888);
-        return new ModelAndView("zx",(Map)zx0(message,10,1));
+        user.setMoney(user.getMoney() - 5888 * count);
+        return new ModelAndView("zx",(Map)zx0(message,10*count,1));
     }
     @CommandMapping(value = {"占星"},menu = {"fk"},notes = "免费抽符卡")
     @Times(interval = 3600 * 20)
@@ -336,7 +341,7 @@ public class ItemService {
             return -1;
         }
 
-        List<Item> list = userItemMapper.selectList(qq2);
+        List<Map> list = userItemMapper.selectListByCount(qq2);
 
         Map map = new HashMap();
         map.put("list",list);
@@ -349,7 +354,7 @@ public class ItemService {
         String[] names = {"御坂美琴","时崎狂三","白井黑子","无极剑圣","一方通行","梦梦","娜娜","伊莉雅","狂热者","探机"
                 ,"泽拉图","凯瑞甘","阿塔尼斯","鸢一折纸","四糸乃","四糸奈","五河琴里","夜刀神十香","上条当麻","亚丝娜","末日使者"
                 ,"萌王","蕾姆","初音未来","栗山未来","喜羊羊","五更琉璃","珂朵莉","西行寺幽幽子","芙兰朵露","蕾米莉亚","贞德"
-                ,"金色之暗","伊卡洛斯","十六夜咲夜","楪祈","博丽灵梦","傻白甜"};
+                ,"金色之暗","伊卡洛斯","十六夜咲夜","楪祈","博丽灵梦","傻白甜","洛天依","萝莉","琪露诺","魂魄妖梦","黑化天子"};
 
 
         for (String name : names) {
@@ -671,12 +676,14 @@ public class ItemService {
 
         List<Item> itemList = itemMapper.getMaxValueGroupType();
 
-        if (itemList.size() == 5){
+        if (itemList.size() > 4){
             for (Item item : itemList) {
+                userItemMapper.insert(new UserItem().setQq(-1L).setItemId(item.getId()).setItemName(item.toFullName()));
                 userItemMapper.insert(new UserItem().setQq(-1L).setItemId(item.getId()).setItemName(item.toFullName()));
             }
         }else {
             for (Item item : itemList) {
+                userItemMapper.insert(new UserItem().setQq(-1L).setItemId(item.getId()).setItemName(item.toFullName()));
                 userItemMapper.insert(new UserItem().setQq(-1L).setItemId(item.getId()).setItemName(item.toFullName()));
                 userItemMapper.insert(new UserItem().setQq(-1L).setItemId(item.getId()).setItemName(item.toFullName()));
             }
