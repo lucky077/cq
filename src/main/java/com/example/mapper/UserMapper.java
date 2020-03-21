@@ -35,13 +35,13 @@ public interface UserMapper extends BaseMapper<User> {
     void changeMoney(User user);
 
 
-    @Update("update user set bank_money = bank_money + bank_money * 0.3")
+    @Update("update user set bank_money = bank_money + bank_money * 0.2")
     void changeBankMoney();
 
     @Update("update user set bank_overdue = bank_overdue + 1 where bank_money < 0")
     void changeBankOverdue();
 
-    @Update("update user set bank_score = bank_score + bank_money * 0.3 where bank_money > 0")
+    @Update("update user set bank_score = bank_score + bank_money * 0.2 where bank_money > 0")
     void changeBankScore();
 
     @Select("select * from user where bank_overdue > 3 and bank_money < 0")

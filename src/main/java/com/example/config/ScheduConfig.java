@@ -83,7 +83,7 @@ public class ScheduConfig {
               public void run() {
                   bank0();
                   itemService.flushShop();
-                  stringRedisTemplate.opsForValue().set(key,new Date().getTime() + LuckUtil.randInt(16,32) * 3600 * 1000L + "");
+                  stringRedisTemplate.opsForValue().set(key,new Date().getTime() + LuckUtil.randInt(16,24) * 3600 * 1000L + "");
                   bank();
               }
           },new Date(time));

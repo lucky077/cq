@@ -93,7 +93,9 @@ public class BankService {
             value = 0;
         }
 
-        value += Integer.parseInt(String.valueOf(user.getMoney())) * 4;
+        value *= 4;
+
+        value += Integer.parseInt(String.valueOf(user.getMoney()));
 
         user.setBankScore(value);
 
