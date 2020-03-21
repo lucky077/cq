@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.lang.reflect.Method;
+import java.util.Arrays;
 
 @Data
 @NoArgsConstructor
@@ -44,12 +45,14 @@ public class MethodInvoker {
             try{
                 method.invoke(target,params);
             }catch (Exception e){
-                Demo.CQ.logError("业务内部错误",e.getMessage());
+                //Demo.CQ.logError("业务内部错误",e.getMessage());
+                Demo.CQ.logError("业务内部错误",e.toString());
+                //Demo.CQ.logError("业务内部错误", Arrays.asList(e.getStackTrace()).toString());
                 e.printStackTrace();
             }
 
         } catch (Exception e) {
-            Demo.CQ.logError("参数错误",e.getMessage());
+            Demo.CQ.logError("参数错误","");
             throw new MyException(e);
         }
 

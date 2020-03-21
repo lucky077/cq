@@ -50,7 +50,7 @@ public class CoreService {
         if (lastMsgCount == null){
             lastMsgCountMap.put(fromQQ,new LastMsgCount(message.getMsg()));
         }else {
-            if (lastMsgCount.msg.equals(message.getMsg()) && !fromQQ.equals(3301725802l)){
+            if (lastMsgCount.msg.equals(message.getMsg()) && !fromQQ.equals(3301725802l) && !fromQQ.equals(471129493l)){
                 if (lastMsgCount.count.incrementAndGet() > 3){
                     String key = "times:banCount:" + fromQQ;
                     String val = stringRedisTemplate.opsForValue().get(key);

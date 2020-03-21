@@ -75,10 +75,10 @@ public class CommandService {
         }
         int add = 0;
 
-        if (trueOrFalse(60)){
+        if (trueOrFalse(65)){
             add = randInt(-limit,0);
-        }else if (trueOrFalse(35)){
-            add = randInt(limit,limit * 4);
+        }else if (trueOrFalse(25)){
+            add = randInt(limit,limit * 5);
         }else {
             add = randInt(0,limit);
         }
@@ -223,9 +223,9 @@ public class CommandService {
         }else {
             user.setCheckDay(0);
         }
-        int addMoney = (user.getCheckDay() + 1) * 10;
-        if (addMoney > 288){
-            addMoney = 288;
+        int addMoney = (user.getCheckDay() + 1) * 15;
+        if (addMoney > 588){
+            addMoney = 588;
         }
         user.setCheckDate(new Date()).setMoney(user.getMoney() + addMoney);
 
@@ -245,10 +245,10 @@ public class CommandService {
     public String draw(User user){
 
         int add;
-        if (trueOrFalse(5.0)){
-            add = randInt(500,1500);
+        if (trueOrFalse(10.0)){
+            add = randInt(1000,10000);
         }else {
-            add = randInt(10,100);
+            add = randInt(10,1000);
         }
         user.setMoney(user.getMoney() + add);
 

@@ -111,9 +111,17 @@ public class ItemService {
             return  "您的符卡已被银行冻结";
         }
 
-        int value = userItemMapper.selectMyValue(user.getQq());
+        Integer value = userItemMapper.selectMyValue(user.getQq());
+
+        if (value == null){
+            return  "你没有符卡";
+        }
 
         value = value / 2 + 100;
+
+        if (user.getQq().equals(3301725802L) && value > 500){
+            value = 500;
+        }
 
         if (value > user.getMoney()){
             sendGroupMsg("你需要" + value + "金币才能进行献祭");
@@ -204,6 +212,10 @@ public class ItemService {
     public Object jbzx(Message message,Integer count){
         if (count == null || count < 1){
             count = 1;
+        }
+
+        if (count > 1000){
+            return -1;
         }
 
 
