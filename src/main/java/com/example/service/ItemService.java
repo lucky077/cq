@@ -83,6 +83,12 @@ public class ItemService {
             return  "您的符卡已被银行冻结";
         }
 
+        long value = (long)(item.getValue() * 0.1);
+        if (value > user.getMoney()){
+            return "你交不起手续费";
+        }
+
+        user.setMoney(user.getMoney() - value);
 
         int result = userItemMapper.delete(new QueryWrapper<UserItem>()
                 .eq("item_id", item.getId()).eq("qq", user.getQq()).last("limit 1"));
@@ -101,7 +107,7 @@ public class ItemService {
                 user.getName(),MyUtil.getCardName(getGroupMemberInfo(qq2)),item.toFullName());
     }
 
-    @CommandMapping(value = {"献祭*"},menu = {"fk"},notes = "献祭符卡进行占星，消耗一定金币")
+    @CommandMapping(value = {"献祭*"},menu = {"fk"},tili = -20,notes = "献祭符卡进行占星，消耗一定金币和20体力")
     @Transactional
     public Object xj(Message message,String itemName){
 
@@ -366,7 +372,8 @@ public class ItemService {
         String[] names = {"御坂美琴","时崎狂三","白井黑子","无极剑圣","一方通行","梦梦","娜娜","伊莉雅","狂热者","探机"
                 ,"泽拉图","凯瑞甘","阿塔尼斯","鸢一折纸","四糸乃","四糸奈","五河琴里","夜刀神十香","上条当麻","亚丝娜","末日使者"
                 ,"萌王","蕾姆","初音未来","栗山未来","喜羊羊","五更琉璃","珂朵莉","西行寺幽幽子","芙兰朵露","蕾米莉亚","贞德"
-                ,"金色之暗","伊卡洛斯","十六夜咲夜","楪祈","博丽灵梦","傻白甜","洛天依","萝莉","琪露诺","魂魄妖梦","黑化天子"};
+                ,"金色之暗","伊卡洛斯","十六夜咲夜","楪祈","博丽灵梦","傻白甜","洛天依","萝莉","琪露诺","魂魄妖梦","黑化天子"
+                ,"双生星灵","凤凰","赏金猎人","众星之子","花语仙灵","风暴之灵","学姐","言和","寒冰射手","巨人僵尸","影流之主"};
 
 
         for (String name : names) {
@@ -517,6 +524,7 @@ public class ItemService {
                 sendGroupMsg(itemName + "交易失败！~");
                 currentGoods = null;
                 lock = false;
+                return;
             }
 
             userMapper.changeMoney(price,userItem.getQq());
@@ -707,7 +715,7 @@ public class ItemService {
                 return "ok";
             }
         });
-
+        redisTemplate.opsForValue().set("bankMoney","30000");
 
         return "符卡数据已经全部清空，之前拥有符卡已经兑换成金币";
     }

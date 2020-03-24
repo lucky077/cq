@@ -57,7 +57,7 @@ public class CommandService {
         return cd;
     }
     @CommandMapping(value = {"赌博*"},menu = {"hd"})
-    @Times(interval = 3600,limit = 2,tip = "每小时只能赌2次噢")
+    @Times(interval = 3600,limit = 1,tip = "每小时只能赌1次噢")
     public Object db(Message message,Integer limit){
         User user = message.getUser();
 

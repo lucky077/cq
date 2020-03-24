@@ -2,6 +2,7 @@ package com.example.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
+import com.example.Demo;
 import com.example.annotation.CommandMapping;
 import com.example.annotation.Times;
 import com.example.entity.*;
@@ -282,13 +283,21 @@ public class HdService {
         if (num == null){
             num = 1l;
         }
-        if (user1.getMoney() < num || num < 1){
-             return  "余额不足！";
-        }
 
         if (user1.getBankOverdue() > 1){
             return  "您的金币已被银行冻结";
         }
+
+
+        if (user1.getMoney() < num + (long)(num * 0.05) || num < 1){
+             return  "余额不足！";
+        }
+
+
+        User user2 = userMapper.selectById0(qq2);
+        user1.setMoney(user1.getMoney() - num - (long)(num * 0.05));
+        user2.setMoney(user2.getMoney() + num);
+        userMapper.updateById0(user2);
 
         Member qq1Info = getGroupMemberInfo(fromQQ);
         Member qq2Info = getGroupMemberInfo(qq2);
@@ -302,10 +311,6 @@ public class HdService {
             l = 10;
         }
         friendMapper.setVal(fromQQ,qq2,l);
-        User user2 = userMapper.selectById0(qq2);
-        user1.setMoney(user1.getMoney() - num);
-        user2.setMoney(user2.getMoney() + num);
-        userMapper.updateById0(user2);
 
         Map data = new HashMap();
         data.put("name1",MyUtil.getCardName(qq1Info));
@@ -364,6 +369,29 @@ public class HdService {
 
         return map;
     }
+
+    Timer timer = new Timer();
+
+    @CommandMapping(value = {"打工"},menu = {"hd"},tili = -20)
+    @Times(interval = 3600,tip = "每小时只能打工一次")
+    public Object dg(Message message){
+
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+
+                int add = randInt(200, 500);
+                User user = userMapper.selectById0(message.getUser().getQq());
+                user.setMoney(user.getMoney() + add);
+                userMapper.updateById0(user);
+
+                sendGroupMsg(message.getUser().getName() +  "打工结束~\n收益：" + add + "金币\n" + Demo.CC.at(user.getQq()));
+            }
+        },1000 * 600);
+
+        return message.getUser().getName() +  "开始打工~";
+    }
+
     private String getTail(int guanxi,Member member){
 
         String ta = member.getGender() == 0 ? "她" : "他";

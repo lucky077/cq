@@ -280,9 +280,9 @@ public class BankService {
         }
         if (pk){
             long sum = 0;
-            int i = randInt(7, 11) + 1;
+            int i = randInt(7, 12) + 1;
 
-            sum += (60000 + bankMoney) / i;
+            sum += (30000 + bankMoney) / i;
 
             userMapper.reduceBankMoney(i);
             Long sumBankMoney = userMapper.getSumBankMoney();
