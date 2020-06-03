@@ -43,7 +43,7 @@ import java.util.stream.Collectors;
 
 import static com.example.Demo.*;
 
-@CommandMapping
+//@CommandMapping
 public class ItemService {
 
     @Resource
@@ -60,12 +60,12 @@ public class ItemService {
 
 
 
-    @CommandMapping(value = {"符卡"},menu = {"cd"},order = 1)
+    //@CommandMapping(value = {"符卡"},menu = {"cd"},order = 1)
     public Object fk(Message message){
         String fk = MyUtil.getChildMenu("fk");
         return fk;
     }
-    @CommandMapping(value = {"赠送符卡*"},menu = {"fk"},order = 2)
+    //@CommandMapping(value = {"赠送符卡*"},menu = {"fk"},order = 2)
     @Transactional
     @Times(limit = 2,interval = 1000)
     public Object zsfk(Message message,Long qq2,String itemName){
@@ -107,7 +107,7 @@ public class ItemService {
                 user.getName(),MyUtil.getCardName(getGroupMemberInfo(qq2)),item.toFullName());
     }
 
-    @CommandMapping(value = {"献祭*"},menu = {"fk"},tili = -20,notes = "献祭符卡进行占星，消耗一定金币和20体力")
+    //@CommandMapping(value = {"献祭*"},menu = {"fk"},notes = "献祭符卡进行占星，消耗一定金币和20体力")
     @Transactional
     public Object xj(Message message,String itemName){
 
@@ -159,7 +159,7 @@ public class ItemService {
         return new ModelAndView("zx",(Map)zx0(message,10 + item.getLevelNum() * 5,2));
     }
 
-    @CommandMapping(value = {"符卡列表*"},menu = {"fk"})
+    //@CommandMapping(value = {"符卡列表*"},menu = {"fk"})
     @Times(interval = 3600,limit = 1)
     public Object fklb(Message message,String type){
 
@@ -179,7 +179,7 @@ public class ItemService {
         return map;
     }
 
-    @CommandMapping(value = {"符卡改名"},menu = {"fk"})
+    //@CommandMapping(value = {"符卡改名"},menu = {"fk"})
     @Times
     public Object fklb(Message message,String itemName,String itemName2){
 
@@ -214,7 +214,7 @@ public class ItemService {
         return "修改成功";
     }
 
-    @CommandMapping(value = {"金币占星*"},menu = {"fk"},notes = "5888金币抽符卡（保底一张卡）")
+    //@CommandMapping(value = {"金币占星*"},menu = {"fk"},notes = "5888金币抽符卡（保底一张卡）")
     public Object jbzx(Message message,Integer count){
         if (count == null || count < 1){
             count = 1;
@@ -248,7 +248,7 @@ public class ItemService {
         user.setMoney(user.getMoney() - 5888 * count);
         return new ModelAndView("zx",(Map)zx0(message,10*count,1));
     }
-    @CommandMapping(value = {"占星"},menu = {"fk"},notes = "免费抽符卡")
+    //@CommandMapping(value = {"占星"},menu = {"fk"},notes = "免费抽符卡")
     @Times(interval = 3600 * 20)
     public Object zx(Message message){
 
@@ -309,7 +309,7 @@ public class ItemService {
         return map;
     }
 
-    @CommandMapping(value = {"实力排名*","实力排行*"},menu = {"cd"})
+    //@CommandMapping(value = {"实力排名*","实力排行*"},menu = {"cd"})
     public Object slpm(Message message,Integer limit){
 
         if (limit == null || limit > 10){
@@ -332,7 +332,7 @@ public class ItemService {
         return map;
     }
 
-    @CommandMapping(value = {"我召唤的符卡"},menu = {"fk"})
+    //@CommandMapping(value = {"我召唤的符卡"},menu = {"fk"})
     public Object wzhdfk(Message message){
 
         User user = message.getUser();
@@ -346,7 +346,7 @@ public class ItemService {
         return new ModelAndView("fklb",map);
     }
 
-    @CommandMapping(value = {"查看符卡*"},menu = {"fk"},order = 1)
+    //@CommandMapping(value = {"查看符卡*"},menu = {"fk"},order = 1)
     public Object ckfk(Message message,Long qq2){
 
         if (qq2 == null){
@@ -390,7 +390,7 @@ public class ItemService {
 
     }
 
-    @CommandMapping(value = {".召唤*"},menu = {"fk"},notes = "召唤新符卡到池中")
+    //@CommandMapping(value = {".召唤*"},menu = {"fk"},notes = "召唤新符卡到池中")
     public Object zh(Message message,String itemName){
 
         if (StringUtils.isEmpty(itemName)){
@@ -445,7 +445,7 @@ public class ItemService {
     @Resource
     private UserMapper userMapper;
 
-    @CommandMapping(value = "拍卖*",menu = "fk")
+    //@CommandMapping(value = "拍卖*",menu = "fk")
     public Object pm(Message message,String itemName,Long value){
 
         if (StringUtils.isEmpty(itemName) || value == null){
@@ -565,7 +565,7 @@ public class ItemService {
         sendGroupMsg("商店已刷新");
     }
 
-    @CommandMapping(value = "商店",menu = "fk")
+    //@CommandMapping(value = "商店",menu = "fk")
     public Object sd(Message message){
 
         List<Shop> shops = shopMapper.selectList(new QueryWrapper<Shop>().orderByDesc("price"));
@@ -575,7 +575,7 @@ public class ItemService {
         return map;
     }
 
-    @CommandMapping(value = "购买*",menu = "fk")
+    //@CommandMapping(value = "购买*",menu = "fk")
     public synchronized Object gm(Message message,Integer number){
 
         User user = message.getUser();
@@ -601,7 +601,7 @@ public class ItemService {
         return user.getName() + "花费" + shop.getPrice() + "金币购买了" + shop.getItemName();
     }
 
-    @CommandMapping(value = "出价*")
+    //@CommandMapping(value = "出价*")
     public Object cj(Message message,Long value){
 
         User user = message.getUser();
@@ -668,7 +668,7 @@ public class ItemService {
 
     }
 
-    @CommandMapping("重置符卡数据")
+    //@CommandMapping("重置符卡数据")
     @Transactional
     public Object czfksj(Message message){
 

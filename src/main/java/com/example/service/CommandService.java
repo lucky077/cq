@@ -33,7 +33,7 @@ import static com.example.Demo.*;
 import static com.example.Variable.*;
 import static com.example.util.LuckUtil.*;
 
-@CommandMapping
+//@CommandMapping
 public class CommandService {
 
     private Integer limit = 5566;
@@ -41,22 +41,22 @@ public class CommandService {
     @Resource
     private UserMapper userMapper;
 
-    @CommandMapping("菜单")
+    //@CommandMapping("菜单")
     public Object cd(Message message){
         String cd = MyUtil.getChildMenu("cd");
         return cd;
     }
-    @CommandMapping(value = {"互动"},menu = {"cd"})
+    //@CommandMapping(value = {"互动"},menu = {"cd"})
     public Object hd(Message message){
         String cd = MyUtil.getChildMenu("hd");
         return cd;
     }
-    //@CommandMapping(value = {"商店"},menu = {"cd"})
+    ////@CommandMapping(value = {"商店"},menu = {"cd"})
     public Object sd(Message message){
        String cd = "www.aslucky.club/robot/item/list?sale=1";
         return cd;
     }
-    @CommandMapping(value = {"赌博*"},menu = {"hd"})
+    //@CommandMapping(value = {"赌博*"},menu = {"hd"})
     @Times(interval = 3600,limit = 1,tip = "每小时只能赌1次噢")
     public Object db(Message message,Integer limit){
         User user = message.getUser();
@@ -94,7 +94,7 @@ public class CommandService {
             return "你失去了" + -add + "金币！";
         }
     }
-    @CommandMapping(value = {"财富排名*","财富排行*"},menu = {"cd"})
+    //@CommandMapping(value = {"财富排名*","财富排行*"},menu = {"cd"})
     public Object cfpm(Message message,Integer limit){
 
         if (limit == null || limit > 10){
@@ -114,7 +114,7 @@ public class CommandService {
         return data;
     }
 
-    @CommandMapping(value = {"真实财富排名*","真实财富排行*"},menu = {"cd"})
+    //@CommandMapping(value = {"真实财富排名*","真实财富排行*"},menu = {"cd"})
     public Object zscfpm(Message message,Integer limit){
 
         if (limit == null || limit > 10){
@@ -139,7 +139,6 @@ public class CommandService {
 
 
     @CommandMapping(value = {"随机老婆*"},menu = {"cd"})
-    @Times(limit = 3,interval = 180)
     @Normal
     public Object sjlp(Message message,Integer start,Integer limit){
         if (start == null || start < 1 ||start > this.limit){
@@ -166,7 +165,6 @@ public class CommandService {
     }
 
     @CommandMapping(value = {"百科*"},menu = {"cd"})
-    @Times(limit = 3,interval = 180)
     @Normal
     public Object bk(Message message,String word){
         if (StringUtils.isEmpty(word)){
@@ -255,7 +253,7 @@ public class CommandService {
         return "抽奖得到" + add +"金币！";
     }
 
-    @CommandMapping(value = {"机器人*"})
+    //@CommandMapping(value = {"机器人*"})
     @Normal
     public Object jqr(Message message,String cmd){
        if (!message.getUser().getQq().equals(471129493L)){

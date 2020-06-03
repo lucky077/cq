@@ -29,7 +29,7 @@ import java.util.stream.Collectors;
 
 import static com.example.util.LuckUtil.*;
 
-@CommandMapping
+//@CommandMapping
 public class HdService {
 
     @Resource
@@ -48,7 +48,7 @@ public class HdService {
     @Resource
     private DumpMapper dumpMapper;
 
-    @CommandMapping(value = "捡垃圾",menu = "hd")
+    //@CommandMapping(value = "捡垃圾",menu = "hd")
     @Times(tip = "24小时内只能使用一次")
     public Object jlj(Message message){
         User user = message.getUser();
@@ -70,7 +70,7 @@ public class HdService {
     }
 
 
-    @CommandMapping(value = {"打劫*","抢劫*"},menu = {"hd"},tili = -30)
+    //@CommandMapping(value = {"打劫*","抢劫*"},menu = {"hd"},tili = -30)
     public Object dj(Message message,Long qq2){
         if (qq2 == null || message.getFromQQ().equals(qq2) || qq2 < 10000L){
             return -1;
@@ -182,17 +182,17 @@ public class HdService {
         Collections.shuffle(items);
         return items.get(0);
     }
-    @CommandMapping(value = "查看仇敌*",menu = {"hd"},order = 1)
+    //@CommandMapping(value = "查看仇敌*",menu = {"hd"},order = 1)
     public Object ckcd(Message message,Long qq2){
 
         return new ModelAndView("ckgx",(Map)ckgx(message,qq2,true,"仇敌"));
     }
-    @CommandMapping(value = "查看朋友*",menu = {"hd"},order = 1)
+    //@CommandMapping(value = "查看朋友*",menu = {"hd"},order = 1)
     public Object ckpy(Message message,Long qq2){
 
         return new ModelAndView("ckgx",(Map)ckgx(message,qq2,false,"朋友"));
     }
-    @CommandMapping(value = "补魔*",menu = {"hd"})
+    //@CommandMapping(value = "补魔*",menu = {"hd"})
     @Times(interval = 1800,tip = "这种事要适度喔")
     public Object bm(Message message,Long qq2,Integer value){
 
@@ -272,7 +272,7 @@ public class HdService {
     }
 
 
-    @CommandMapping(value = "赠送*",menu = {"hd"})
+    //@CommandMapping(value = "赠送*",menu = {"hd"})
     @Times(limit = 2,interval = 100)
     public Object zs(Message message,Long qq2,Long num){
         Long fromQQ = message.getFromQQ();
@@ -319,7 +319,7 @@ public class HdService {
         return data;
     }
 
-    //@CommandMapping(value = "挑衅*",tili = -2,menu = {"hd"})
+    ////@CommandMapping(value = "挑衅*",tili = -2,menu = {"hd"})
     public Object tx(Message message,Long qq2){
         Long fromQQ = message.getFromQQ();
         Member qq1Info = getGroupMemberInfo(fromQQ);
@@ -334,7 +334,7 @@ public class HdService {
         return data;
     }
 
-    @CommandMapping(value = {"查看*","属性*"},menu = {"hd"})
+    //@CommandMapping(value = {"查看*","属性*"},menu = {"hd"})
     public Object sx(Message message,Long qq2){
         Long fromQQ = message.getFromQQ();
         Long targetQQ = message.getFromQQ();
@@ -372,7 +372,7 @@ public class HdService {
 
     Timer timer = new Timer();
 
-    @CommandMapping(value = {"打工"},menu = {"hd"},tili = -20)
+    //@CommandMapping(value = {"打工"},menu = {"hd"},tili = -20)
     @Times(interval = 3600,tip = "每小时只能打工一次")
     public Object dg(Message message){
 

@@ -26,7 +26,7 @@ import static com.example.Demo.sendGroupMsg;
 import static com.example.Variable.currentGoods;
 import static com.example.util.LuckUtil.*;
 
-@CommandMapping
+//@CommandMapping
 public class BankService {
 
 
@@ -52,13 +52,13 @@ public class BankService {
     private StringRedisTemplate redisTemplate;
 
 
-    @CommandMapping(value = {"银行"},menu = {"cd"})
+    //@CommandMapping(value = {"银行"},menu = {"cd"})
     public Object yh(Message message){
         String cd = MyUtil.getChildMenu("yh");
         return cd;
     }
 
-    @CommandMapping(value = {"银行信息"},menu = {"yh"})
+    //@CommandMapping(value = {"银行信息"},menu = {"yh"})
     public Object yhxx(Message message){
         StringBuilder sb = new StringBuilder();
         User user = message.getUser();
@@ -79,7 +79,7 @@ public class BankService {
         return sb.toString();
     }
 
-    @CommandMapping(value = {"信用评估"},menu = {"yh"})
+    //@CommandMapping(value = {"信用评估"},menu = {"yh"})
     public Object xypg(Message message){
 
         User user = message.getUser();
@@ -102,7 +102,7 @@ public class BankService {
         return "你最多能贷款" + value;
     }
 
-    @CommandMapping(value = {"存款*","存钱*"},menu = {"yh"})
+    //@CommandMapping(value = {"存款*","存钱*"},menu = {"yh"})
     @Times(interval = 3600,limit = 2)
     public Object ck(Message message,Long tMoney){
 
@@ -128,7 +128,7 @@ public class BankService {
 
         return "成功存款" + tMoney + "到银行";
     }
-    @CommandMapping(value = {"取款*","取钱*"},menu = {"yh"})
+    //@CommandMapping(value = {"取款*","取钱*"},menu = {"yh"})
     //@Times(interval = 3600,limit = 2)
     public Object qk(Message message,Long tMoney){
 
@@ -150,7 +150,7 @@ public class BankService {
 
         return "成功从银行取款" + tMoney;
     }
-    @CommandMapping(value = {"贷款*","借钱*"},menu = {"yh"})
+    //@CommandMapping(value = {"贷款*","借钱*"},menu = {"yh"})
     @Times(interval = 3600,limit = 2)
     public Object dk(Message message,Long tMoney){
 
@@ -173,7 +173,7 @@ public class BankService {
         return "成功从银行贷款" + tMoney;
     }
 
-    @CommandMapping(value = {"还款*","还钱*"},menu = {"yh"})
+    //@CommandMapping(value = {"还款*","还钱*"},menu = {"yh"})
     //@Times(interval = 3600,limit = 2)
     public Object hk(Message message,Long tMoney){
 
@@ -205,7 +205,7 @@ public class BankService {
         return "成功还款" + tMoney + "到银行";
     }
 
-    @CommandMapping(value = {"派遣*"},menu = {"yh"},notes = "符卡驻扎到银行")
+    //@CommandMapping(value = {"派遣*"},menu = {"yh"},notes = "符卡驻扎到银行")
     public Object pq(Message message,String itemName){
 
         User user = message.getUser();
@@ -239,7 +239,7 @@ public class BankService {
         return user.getName() + "已将" + item.toFullName() + "派遣至银行";
     }
 
-    @CommandMapping(value = {"召回"},menu = {"yh"},notes = "召回派遣至银行的符卡")
+    //@CommandMapping(value = {"召回"},menu = {"yh"},notes = "召回派遣至银行的符卡")
     @Transactional
     public Object zh(Message message){
 
@@ -260,7 +260,7 @@ public class BankService {
         return user.getName() + "已将" + item.toFullName() + "从银行召回";
     }
 
-    @CommandMapping(value = {"打劫银行","抢劫银行"},tili = -30,menu = {"yh"},notes = "")
+    //@CommandMapping(value = {"打劫银行","抢劫银行"},tili = -30,menu = {"yh"},notes = "")
     @Transactional
     public Object djyh(Message message){
 
@@ -328,7 +328,7 @@ public class BankService {
 
     }
 
-    @CommandMapping(value = {"劫狱"},tili = -20,menu = {"yh"},notes = "")
+    //@CommandMapping(value = {"劫狱"},tili = -20,menu = {"yh"},notes = "")
     @Transactional
     public Object jy(Message message){
 

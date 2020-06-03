@@ -17,7 +17,7 @@ import java.util.*;
 
 import static com.example.util.LuckUtil.*;
 
-@CommandMapping
+//@CommandMapping
 public class PKService {
 
     @Resource
